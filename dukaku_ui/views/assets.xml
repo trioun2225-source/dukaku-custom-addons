@@ -2,6 +2,8 @@
 <odoo>
     <data>
 
+        <!-- ── Backend theme ──────────────────────────────────────────────── -->
+
         <!-- Inject brand variables early in the primary variables bundle -->
         <record id="dukaku_primary_variables" model="ir.asset">
             <field name="name">Dukaku Theme - Primary Variables</field>
@@ -36,6 +38,29 @@
             <field name="name">Dukaku Dark Mode - Toggle Template</field>
             <field name="bundle">web.assets_backend</field>
             <field name="path">dukaku_ui/static/src/xml/dukaku_toggle.xml</field>
+        </record>
+
+        <!-- ── Login page (frontend) ──────────────────────────────────────── -->
+
+        <!-- Light mode base styles for login page -->
+        <record id="dukaku_login_light_scss" model="ir.asset">
+            <field name="name">Dukaku Login - Light Mode</field>
+            <field name="bundle">web.assets_frontend</field>
+            <field name="path">dukaku_ui/static/src/scss/dukaku_login_light.scss</field>
+        </record>
+
+        <!-- Dark mode styles for login page -->
+        <record id="dukaku_login_dark_scss" model="ir.asset">
+            <field name="name">Dukaku Login - Dark Mode</field>
+            <field name="bundle">web.assets_frontend</field>
+            <field name="path">dukaku_ui/static/src/scss/dukaku_login_dark.scss</field>
+        </record>
+
+        <!-- Vanilla JS toggle for login page — must be in minimal bundle (loaded immediately) -->
+        <record id="dukaku_login_toggle_js" model="ir.asset">
+            <field name="name">Dukaku Login - Dark Mode Toggle JS</field>
+            <field name="bundle">web.assets_frontend_minimal</field>
+            <field name="path">dukaku_ui/static/src/js/dukaku_login_toggle.js</field>
         </record>
 
     </data>

@@ -16,6 +16,13 @@
             'dukaku_ui/static/src/js/dukaku_toggle.js',
             'dukaku_ui/static/src/xml/dukaku_toggle.xml',
         ],
+        'web.assets_frontend': [
+            'dukaku_ui/static/src/scss/dukaku_login_light.scss',
+            'dukaku_ui/static/src/scss/dukaku_login_dark.scss',
+        ],
+        'web.assets_frontend_minimal': [
+            'dukaku_ui/static/src/js/dukaku_login_toggle.js',
+        ],
     },
     'installable': True,
     'license': 'LGPL-3',

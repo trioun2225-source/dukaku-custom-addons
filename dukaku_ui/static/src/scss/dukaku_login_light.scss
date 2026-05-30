@@ -1,0 +1,86 @@
+// ─── Dukaku Login Page — Light Mode Base ─────────────────────────────────────
+
+// Override Bootstrap's bg-100 (gray-100 = #f8f9fa) with clean white/near-white
+body.bg-100 {
+    background-color: #F5F5F5 !important;
+}
+
+// Login card: pure white with subtle brand shadow
+.o_database_list.card,
+.oe_login_form ~ .card,
+#wrapwrap .card {
+    background-color: #FFFFFF !important;
+    border: none !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+// Inputs
+.oe_login_form .form-control {
+    background-color: #FFFFFF !important;
+    color: #1A1A1A !important;
+    border-color: #D0D0D0 !important;
+
+    &:focus {
+        border-color: #F5A800 !important;
+        box-shadow: 0 0 0 0.2rem rgba(245, 168, 0, 0.2) !important;
+    }
+
+    &::placeholder { color: #AAAAAA !important; }
+}
+
+// Show-password toggle border should match input
+.o_show_password {
+    border-color: #D0D0D0 !important;
+    background-color: #FFFFFF !important;
+    color: #1A1A1A !important;
+
+    &:focus { border-color: #F5A800 !important; }
+}
+
+// Labels and body text
+.oe_login_form .form-label,
+.oe_login_form label {
+    color: #1A1A1A !important;
+}
+
+// Links (Reset Password, Passkey)
+.oe_login_form a,
+.oe_login_form .btn-link {
+    color: #F5A800 !important;
+
+    &:hover { color: #E07000 !important; }
+}
+
+// Login button
+.oe_login_form .btn-primary {
+    background-color: #F5A800 !important;
+    border-color: #F5A800 !important;
+    color: #1A1A1A !important;
+    font-weight: 600;
+
+    &:hover, &:active {
+        background-color: #E07000 !important;
+        border-color: #E07000 !important;
+        color: #FFFFFF !important;
+    }
+}
+
+// Passkey list item
+.o_login_auth .list-group-item {
+    border-color: #E0E0E0 !important;
+    color: #1A1A1A !important;
+
+    &:hover { background-color: rgba(245, 168, 0, 0.08) !important; }
+}
+
+// Divider lines
+#wrapwrap .border-bottom,
+#wrapwrap .border-top {
+    border-color: #E8E8E8 !important;
+}
+
+// "Powered by" footer
+#wrapwrap .text-muted,
+#wrapwrap small {
+    color: #888888 !important;
+}
