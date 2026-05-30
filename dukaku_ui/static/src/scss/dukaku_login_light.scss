@@ -1,58 +1,93 @@
 // ─── Dukaku Login Page — Light Mode Base ─────────────────────────────────────
+//
+// Goals:
+//   1. Force light rendering regardless of OS/browser dark mode preference
+//   2. Explicit color on every visible text element — no inherited/UA defaults
+//
 
-// Override Bootstrap's bg-100 (gray-100 = #f8f9fa) with clean white/near-white
-body.bg-100 {
-    background-color: #F5F5F5 !important;
+// ── Force light color-scheme on the whole page ───────────────────────────────
+// Prevents browsers (Chrome "Auto Dark Mode", Firefox, Safari) from applying
+// their own dark UA stylesheet to form controls, text, and scrollbars.
+html,
+body {
+    color-scheme: light !important;
 }
 
-// Login card: pure white with subtle brand shadow
-.o_database_list.card,
-.oe_login_form ~ .card,
-#wrapwrap .card {
+// ── Base page ─────────────────────────────────────────────────────────────────
+body.bg-100 {
+    background-color: #F5F5F5 !important;
+    color: #1A1A1A !important;
+}
+
+#wrapwrap {
+    color: #1A1A1A !important;
+    background-color: transparent !important;
+}
+
+// ── Login card ────────────────────────────────────────────────────────────────
+#wrapwrap .card,
+.o_database_list.card {
     background-color: #FFFFFF !important;
     border: none !important;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08) !important;
+    color: #1A1A1A !important;   // explicit — browser dark mode can strip this
+    color-scheme: light !important;
 }
 
-// Inputs
-.oe_login_form .form-control {
+.card-body {
+    background-color: #FFFFFF !important;
+    color: #1A1A1A !important;
+}
+
+// ── Labels ────────────────────────────────────────────────────────────────────
+.oe_login_form .form-label,
+.oe_login_form label,
+#wrapwrap label,
+#wrapwrap .form-label {
+    color: #333333 !important;
+}
+
+// ── Inputs ────────────────────────────────────────────────────────────────────
+.oe_login_form .form-control,
+#wrapwrap .form-control {
     background-color: #FFFFFF !important;
     color: #1A1A1A !important;
     border-color: #D0D0D0 !important;
+    color-scheme: light !important;   // prevents browser dark-styling the input
 
     &:focus {
         border-color: #F5A800 !important;
         box-shadow: 0 0 0 0.2rem rgba(245, 168, 0, 0.2) !important;
+        background-color: #FFFFFF !important;
+        color: #1A1A1A !important;
     }
 
     &::placeholder { color: #AAAAAA !important; }
 }
 
-// Show-password toggle border should match input
+// Show-password toggle
 .o_show_password {
     border-color: #D0D0D0 !important;
     background-color: #FFFFFF !important;
     color: #1A1A1A !important;
 
+    .fa { color: #1A1A1A !important; }
+
     &:focus { border-color: #F5A800 !important; }
 }
 
-// Labels and body text
-.oe_login_form .form-label,
-.oe_login_form label {
-    color: #1A1A1A !important;
-}
-
-// Links (Reset Password, Passkey)
+// ── Links ─────────────────────────────────────────────────────────────────────
 .oe_login_form a,
-.oe_login_form .btn-link {
+.oe_login_form .btn-link,
+#wrapwrap a.btn-link {
     color: #F5A800 !important;
 
-    &:hover { color: #E07000 !important; }
+    &:hover, &:focus { color: #E07000 !important; }
 }
 
-// Login button
-.oe_login_form .btn-primary {
+// ── Login button ──────────────────────────────────────────────────────────────
+.oe_login_form .btn-primary,
+#wrapwrap .btn-primary {
     background-color: #F5A800 !important;
     border-color: #F5A800 !important;
     color: #1A1A1A !important;
@@ -65,22 +100,54 @@ body.bg-100 {
     }
 }
 
-// Passkey list item
+// ── "- or -" divider text ─────────────────────────────────────────────────────
+// Rendered as <em class="text-muted small"> — browsers in dark mode
+// can make this invisible against a light card.
+.o_login_auth em,
+.o_login_auth .text-muted,
+#wrapwrap .text-muted,
+#wrapwrap em {
+    color: #777777 !important;
+}
+
+// ── Passkey list ──────────────────────────────────────────────────────────────
 .o_login_auth .list-group-item {
+    background-color: #FFFFFF !important;
     border-color: #E0E0E0 !important;
     color: #1A1A1A !important;
 
-    &:hover { background-color: rgba(245, 168, 0, 0.08) !important; }
+    .fa { color: #1A1A1A !important; }
+
+    &:hover {
+        background-color: rgba(245, 168, 0, 0.08) !important;
+        color: #1A1A1A !important;
+    }
 }
 
-// Divider lines
+// ── Divider borders ───────────────────────────────────────────────────────────
 #wrapwrap .border-bottom,
 #wrapwrap .border-top {
     border-color: #E8E8E8 !important;
 }
 
-// "Powered by" footer
-#wrapwrap .text-muted,
-#wrapwrap small {
+// ── Footer ("Powered by Dukaku POS") ─────────────────────────────────────────
+// Covers <span>, <small>, and any .text-muted in the footer row.
+#wrapwrap .card-body > .text-center.small,
+#wrapwrap .card-body > .text-center.small span,
+#wrapwrap .card-body > .text-center.small a,
+#wrapwrap small,
+#wrapwrap .small {
     color: #888888 !important;
+}
+
+// ── Caps-lock warning ─────────────────────────────────────────────────────────
+.o_caps_lock_warning_text {
+    color: #CC2200 !important;
+}
+
+// ── Alert / error messages ────────────────────────────────────────────────────
+#wrapwrap .alert-danger {
+    background-color: #FFF0EE !important;
+    border-color: #F5C6CB !important;
+    color: #842029 !important;
 }
