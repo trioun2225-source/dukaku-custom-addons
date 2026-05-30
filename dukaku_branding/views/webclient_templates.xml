@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Override browser tab title and favicon -->
+    <template id="dukaku_web_layout" inherit_id="web.layout" name="Dukaku POS Layout">
+        <xpath expr="//title" position="replace">
+            <title t-esc="(title + ' - Dukaku POS') if title else 'Dukaku POS'"/>
+        </xpath>
+        <xpath expr="//link[@rel='shortcut icon']" position="replace">
+            <link type="image/x-icon" rel="shortcut icon"
+                  href="/dukaku_branding/static/src/img/favicon.ico"/>
+        </xpath>
+    </template>
+
+    <!-- Override login page logo -->
+    <template id="dukaku_login_layout" inherit_id="web.login_layout" name="Dukaku POS Login">
+        <xpath expr="//div[hasclass('pb-3')]" position="replace">
+            <div class="text-center pb-3 border-bottom mb-4">
+                <img src="/dukaku_branding/static/src/img/logo.png"
+                     alt="Dukaku POS" style="max-height:120px; max-width: 100%; width:auto"/>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

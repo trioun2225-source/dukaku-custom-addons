@@ -1,0 +1,39 @@
+// ============================================================
+// Dukaku POS — Brand color overrides
+// Swap these values to match your brand palette.
+// ============================================================
+
+// Primary brand color (buttons, highlights, active states)
+$o-brand-primary: #1a73e8 !default;
+
+// Secondary / accent color
+$o-brand-secondary: #fbbc04 !default;
+
+// Top navigation bar background
+.o_main_navbar {
+    background-color: $o-brand-primary;
+
+    .o_menu_brand {
+        // Hide "Odoo" text next to the logo
+        font-size: 0;
+
+        &::after {
+            content: 'Dukaku POS';
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+    }
+}
+
+// Login page background accent
+.o_login_footer,
+.o_database_list_header {
+    background-color: $o-brand-primary;
+    color: #fff;
+}
+
+// POS interface top bar
+.pos-top-header {
+    background-color: $o-brand-primary;
+}

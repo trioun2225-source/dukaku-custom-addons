@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Updates the default company name created on a fresh install.
+        On an existing database, edit the company name via:
+        Settings > Companies > (your company) > General Information
+    -->
+    <record id="base.main_company" model="res.company">
+        <field name="name">Dukaku POS</field>
+    </record>
+</odoo>
