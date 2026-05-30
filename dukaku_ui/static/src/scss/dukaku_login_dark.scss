@@ -30,6 +30,11 @@ body.dukaku_dark {
         background-color: transparent !important;
     }
 
+    // Blend white logo background into the dark card surface
+    .card img {
+        mix-blend-mode: multiply;
+    }
+
     // ── Inputs ───────────────────────────────────────────────────────────────
     .form-control {
         background-color: #333333 !important;
