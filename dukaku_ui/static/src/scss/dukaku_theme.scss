@@ -1,0 +1,178 @@
+// Dukaku Brand Colors
+$dukaku-primary:    #F5A800;
+$dukaku-hover:      #E07000;
+$dukaku-text:       #1A1A1A;
+$dukaku-white:      #FFFFFF;
+
+// Override Odoo/Bootstrap primary before compilation
+$o-brand-primary:   $dukaku-primary;
+$primary:           $dukaku-primary;
+
+// ─── Navbar ──────────────────────────────────────────────────────────────────
+.o_main_navbar {
+    background-color: $dukaku-text !important;
+    border-bottom: 2px solid $dukaku-primary !important;
+
+    // Brand text — prevent flex-shrink from squeezing it into adjacent items
+    .o_menu_brand {
+        flex-shrink: 0 !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: $dukaku-primary !important;
+        font-weight: 700;
+
+        &:hover { color: $dukaku-hover !important; }
+    }
+
+    // Section items: .o-dropdown covers all dropdown buttons (Orders, Products…)
+    // .o-dropdown-item covers plain links (Dashboard). Both carry the purple default.
+    .o_menu_sections {
+        .o-dropdown,
+        .o-dropdown-item,
+        .o_nav_entry {
+            background-color: $dukaku-text !important;
+            color: $dukaku-white !important;
+
+            // text inside <button> wrappers
+            span { color: $dukaku-white !important; }
+
+            &:hover,
+            &:focus,
+            &.show {
+                background-color: rgba($dukaku-primary, 0.15) !important;
+                color: $dukaku-primary !important;
+                span { color: $dukaku-primary !important; }
+            }
+        }
+    }
+
+    .o_menu_toggle {
+        color: $dukaku-white !important;
+
+        &:hover { color: $dukaku-primary !important; }
+    }
+
+    // Systray icons
+    .o_menu_systray .o-dropdown,
+    .o_menu_systray button {
+        background-color: transparent !important;
+        color: $dukaku-white !important;
+
+        &:hover { color: $dukaku-primary !important; }
+    }
+}
+
+// ─── Primary Buttons ─────────────────────────────────────────────────────────
+.btn-primary {
+    background-color: $dukaku-primary !important;
+    border-color: $dukaku-primary !important;
+    color: $dukaku-text !important;
+
+    &:hover,
+    &:focus,
+    &:active {
+        background-color: $dukaku-hover !important;
+        border-color: $dukaku-hover !important;
+        color: $dukaku-white !important;
+    }
+}
+
+// ─── Links ───────────────────────────────────────────────────────────────────
+a {
+    color: $dukaku-primary;
+
+    &:hover,
+    &:focus { color: $dukaku-hover; }
+}
+
+// ─── Sidebar / App Menu Active States ────────────────────────────────────────
+.o_menu_sections .o_nav_entry.active,
+.o_home_menu .o_app.o_active,
+.o_action_manager .o_menu_item.active,
+.o_web_client .o_menu_sections > .o_nav_entry:focus {
+    background-color: rgba($dukaku-primary, 0.15) !important;
+    color: $dukaku-primary !important;
+    border-left: 3px solid $dukaku-primary;
+}
+
+// ─── Loading / Progress Bar ──────────────────────────────────────────────────
+.o_loading_indicator,
+#nprogress .bar {
+    background: $dukaku-primary !important;
+}
+
+#nprogress .peg {
+    box-shadow: 0 0 10px $dukaku-primary, 0 0 5px $dukaku-primary !important;
+}
+
+// ─── Input Focus Rings ───────────────────────────────────────────────────────
+.form-control:focus,
+.o_field_widget input:focus,
+.o_field_widget textarea:focus,
+.o_field_widget select:focus {
+    border-color: $dukaku-primary !important;
+    box-shadow: 0 0 0 0.2rem rgba($dukaku-primary, 0.25) !important;
+    outline: none;
+}
+
+// ─── POS Header ──────────────────────────────────────────────────────────────
+.pos-topleft-buttons,
+.pos-top-header,
+.pos .top-content {
+    background-color: $dukaku-text !important;
+    border-bottom: 2px solid $dukaku-primary !important;
+    color: $dukaku-white !important;
+}
+
+// ─── POS Action / Numpad Buttons ─────────────────────────────────────────────
+.pos .action-button,
+.pos .numpad .button.col,
+.pos .pay-button {
+    background-color: $dukaku-primary !important;
+    color: $dukaku-text !important;
+    border: 1px solid $dukaku-hover !important;
+
+    &:hover,
+    &:active {
+        background-color: $dukaku-hover !important;
+        color: $dukaku-white !important;
+    }
+}
+
+.pos .submit-order,
+.pos .button.send-order {
+    background-color: $dukaku-primary !important;
+    color: $dukaku-text !important;
+
+    &:hover { background-color: $dukaku-hover !important; }
+}
+
+// ─── Dark Mode Toggle Button ──────────────────────────────────────────────────
+.o_dukaku_toggle_wrapper {
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+}
+
+.o_dukaku_dark_toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid $dukaku-primary;
+    background: transparent;
+    color: $dukaku-primary;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    line-height: 1;
+    padding: 0;
+
+    &:hover {
+        background: $dukaku-primary;
+        color: $dukaku-text;
+    }
+}

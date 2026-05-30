@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="dukaku_ui.DarkModeToggle">
+        <div class="o_dukaku_toggle_wrapper">
+            <button
+                class="o_dukaku_dark_toggle"
+                t-att-title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+                t-on-click="toggle"
+            >
+                <t t-if="isDark">☀</t>
+                <t t-else="">🌙</t>
+            </button>
+        </div>
+    </t>
+
+</templates>

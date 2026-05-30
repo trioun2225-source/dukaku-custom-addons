@@ -1,0 +1,4 @@
+// Hide the Discuss messaging menu bubble from the systray
+.o_menu_systray .o-mail-MessagingMenu {
+    display: none !important;
+}

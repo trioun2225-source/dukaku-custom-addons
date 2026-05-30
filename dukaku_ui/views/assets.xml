@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Inject brand variables early in the primary variables bundle -->
+        <record id="dukaku_primary_variables" model="ir.asset">
+            <field name="name">Dukaku Theme - Primary Variables</field>
+            <field name="bundle">web._assets_primary_variables</field>
+            <field name="path">dukaku_ui/static/src/scss/dukaku_theme.scss</field>
+            <field name="sequence">9</field>
+        </record>
+
+        <!-- Full theme styles in backend bundle -->
+        <record id="dukaku_assets_backend" model="ir.asset">
+            <field name="name">Dukaku Theme - Backend</field>
+            <field name="bundle">web.assets_backend</field>
+            <field name="path">dukaku_ui/static/src/scss/dukaku_theme.scss</field>
+        </record>
+
+        <!-- Dark mode overrides (body.dukaku_dark scoped) -->
+        <record id="dukaku_dark_scss" model="ir.asset">
+            <field name="name">Dukaku Dark Mode - SCSS</field>
+            <field name="bundle">web.assets_backend</field>
+            <field name="path">dukaku_ui/static/src/scss/dukaku_dark.scss</field>
+        </record>
+
+        <!-- Dark mode toggle OWL component -->
+        <record id="dukaku_toggle_js" model="ir.asset">
+            <field name="name">Dukaku Dark Mode - Toggle JS</field>
+            <field name="bundle">web.assets_backend</field>
+            <field name="path">dukaku_ui/static/src/js/dukaku_toggle.js</field>
+        </record>
+
+        <!-- Dark mode toggle QWeb template -->
+        <record id="dukaku_toggle_xml" model="ir.asset">
+            <field name="name">Dukaku Dark Mode - Toggle Template</field>
+            <field name="bundle">web.assets_backend</field>
+            <field name="path">dukaku_ui/static/src/xml/dukaku_toggle.xml</field>
+        </record>
+
+    </data>
+</odoo>
