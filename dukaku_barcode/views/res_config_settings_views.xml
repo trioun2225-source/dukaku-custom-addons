@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_barcode" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.barcode</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='companies']" position="after">
+                <div id="dukaku_barcode_settings">
+                    <block title="Dukaku Barcode &amp; QR" id="dukaku_barcode_block">
+                        <setting
+                            id="dukaku_barcode_ean13_prefix_setting"
+                            string="Internal EAN-13 Prefix"
+                            help="3-digit GS1 restricted-distribution prefix (200-299) for auto-assigned barcodes. Set a unique value per tenant to keep barcode spaces distinct.">
+                            <field name="dukaku_barcode_ean13_prefix" widget="integer"/>
+                        </setting>
+                    </block>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

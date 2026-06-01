@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 40mm x 30mm thermal label - tune page_width/page_height (in mm) to your Xprinter roll -->
+    <record id="paperformat_thermal_label_40x30" model="report.paperformat">
+        <field name="name">Thermal Label 40x30mm (Xprinter)</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_width">40</field>
+        <field name="page_height">30</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">2</field>
+        <field name="margin_bottom">2</field>
+        <field name="margin_left">2</field>
+        <field name="margin_right">2</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">3</field>
+        <field name="dpi">300</field>
+    </record>
+</odoo>

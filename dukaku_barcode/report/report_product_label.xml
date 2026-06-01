@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Report action: appears in Print menu on product form and list view.
+         Paperformat: Thermal Label 40x30mm (Xprinter) — hardware test gate,
+         Don must verify sizing against actual roll before shipping to tenants. -->
+    <record id="action_report_product_label" model="ir.actions.report">
+        <field name="name">Product Label</field>
+        <field name="model">product.template</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dukaku_barcode.report_product_label_document</field>
+        <field name="report_file">dukaku_barcode.report_product_label_document</field>
+        <field name="paperformat_id" ref="paperformat_thermal_label_40x30"/>
+        <field name="binding_model_id" ref="product.model_product_template"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Label template.
+         Layout: web.minimal_layout — bare HTML + PDF CSS, no company header/footer.
+         Barcode: rendered server-side via /report/barcode/ route (auth='public').
+           - EAN13 type: used for barcode_symbology == 'ean13'.
+             Note: Odoo's route falls back to Code128 if check_barcode_encoding
+             rejects the value (affects manufacturer codes with 0-prefix) — the
+             barcode still scans correctly, only the visual style differs.
+           - Code128 type: used for barcode_symbology == 'code128'.
+         Size target: 40mm x 30mm with 2mm margins from paperformat.
+         *** HARDWARE TEST GATE ***
+         Don must print this on the real Xprinter and confirm:
+           1. Label fits the roll (page_width/page_height in report_paperformat.xml).
+           2. Barcode scans correctly with the POS scanner.
+           3. Font sizes are legible. Tune page_width, page_height, and the
+              font-size / max-height values here to match actual hardware. -->
+    <template id="report_product_label_document">
+        <!-- web.html_container → web.report_layout → <main> → content.
+             Odoo 19's _prepare_html requires content inside <main>, and extracts
+             each <div class="article"> as a separate wkhtmltopdf call (one label
+             per product). data-oe-model/data-oe-id enable res_ids tracking. -->
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <div class="article"
+                     t-att-data-oe-model="doc._name"
+                     t-att-data-oe-id="doc.id">
+                    <div class="page" style="
+                        overflow: hidden;
+                        font-family: Arial, Helvetica, sans-serif;
+                        line-height: 1.2;
+                    ">
+                        <!-- Product name: bold, single line, truncated -->
+                        <div style="
+                            font-size: 7.5pt;
+                            font-weight: bold;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            margin-bottom: 0.6mm;
+                        ">
+                            <t t-esc="doc.name"/>
+                        </div>
+
+                        <!-- Price with currency -->
+                        <div style="font-size: 6.5pt; margin-bottom: 1mm;">
+                            <span t-field="doc.list_price"
+                                  t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                        </div>
+
+                        <!-- Barcode image — bc_type switches EAN13 vs Code128.
+                             Pixel dims (420x150) target ~300 DPI at 36mm content width.
+                             CSS max-height caps the rendered size on the label.
+                             humanreadable=1 adds human-readable digits below bars. -->
+                        <t t-if="doc.barcode">
+                            <img t-att-src="doc._barcode_svg_uri()"
+                                 style="display:block;width:100%;max-height:14mm;"/>
+                        </t>
+                        <t t-else="">
+                            <div style="font-size: 5.5pt; color: #bb0000; margin-top: 2mm;">
+                                No barcode — run "Assign Missing Barcodes"
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Injects a QR code block into the POS digital receipt just above the
+         before-footer marker. The QR encodes the order reference (order.name).
+         generateQRCodeDataUrl is pure client-side (DOM + bundled QRCode lib) —
+         never makes an HTTP call, so this works fully offline. -->
+    <t t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('before-footer')]" position="before">
+            <div t-if="this.dukakuQrCode" class="dukaku-receipt-qr text-center pt-2">
+                <img t-att-src="this.dukakuQrCode"
+                     style="width:80px;height:80px;display:block;margin:0 auto;"/>
+                <div style="font-size:75%;margin-top:2px;"
+                     t-esc="order.name"/>
+            </div>
+        </xpath>
+    </t>
+</templates>
