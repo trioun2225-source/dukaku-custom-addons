@@ -31,6 +31,7 @@
 - **Constraint:** `@api.constrains('barcode')` validates check digit on every 13-digit all-numeric barcode using raw `get_barcode_check_digit` math — NOT `check_barcode_encoding`. Reason: `check_barcode_encoding` falsely rejects valid EAN-13 codes starting with `0` (UPC-A overlap guard). Raw math has zero false rejections across all barcode shapes.
 - **`product_variant_count` search caveat:** this field is computed/unstored — cannot be used in ORM domain filters. Backfill action searches `('barcode', '=', False)` then filters with `.filtered(lambda p: p.product_variant_count <= 1)` in Python.
 - **Phase 4 note (in code):** 200–299 gives 100 prefix slots. True at-scale multi-tenant uniqueness (e.g. sharding the 9-digit sequence body per tenant) is deliberately deferred to the self-serve onboarding phase.
+- **Backfill not cleanly tested at scale:** the batch "Assign Missing Barcodes" action (`action_assign_missing_barcodes`) was exercised during development but never run cleanly against multiple empty products in one go — the test scaffold kept conflicting with itself. Worth a 30-second manual check: go to Products list view, select several products that have no barcode, Action → Assign Missing Barcodes, confirm all receive barcodes and the success notification shows the correct count.
 
 ---
 
@@ -93,13 +94,24 @@ Printing multiple products at once (select N on list view → Print → Product 
 
 ## Staging credentials (testing only)
 
-During Task 4 testing, the password for `service@dukaku.com` on the `staging` DB was reset to `DukakuStaging2026!`. This is the only internal user on staging. Reset again after testing if needed.
+During Task 4 testing, the password for `service@dukaku.com` on the `staging` DB was reset. See password manager for current credential. This is the only internal user on staging. Reset again after testing if needed.
 
 ---
 
+## Operational safety
+
+**This box runs live production tenants alongside staging.** All tenants share the same Odoo process (`/opt/odoo19/odoo-venv`), the same `systemctl odoo19` service, and the same PostgreSQL instance. Check `psql postgres -c '\l'` for the current tenant list — not hardcoded here.
+
+Consequences:
+- `systemctl restart odoo19` interrupts service for every tenant — requires explicit approval each time, never bundle with an upgrade step
+- Any `pip install` or system package change in `/opt/odoo19/odoo-venv` affects production — take a VPS snapshot first
+- Never target a production DB in any script; always pass `--database=staging` explicitly and confirm the target in output before committing
+
+**Auto mode:** Claude Code's auto-accept classifier re-enabled itself multiple times during this session despite being turned off with Shift+Tab. Each time it was on, commands ran without prompts — including a `systemctl restart odoo19` that hit all tenants. **Confirm auto mode is OFF (Shift+Tab, look for 1.Yes / 2.No prompts) at the start of every session before any work begins.** Do not rely on "I'll show commands anyway" as a substitute — the gate must be off at the UI level.
+
 ## Safety rules (standing)
 
-1. Never touch a production tenant (`Cabinet_BND-Fils_Avocats`, `admin`, `kosa`, `main`, `main_template`)
+1. Never touch a production tenant — check the live DB list with `su -s /bin/bash odoo19 -c "psql postgres -c '\\l'"` rather than hardcoding names here
 2. Snapshot VPS before any shared-venv pip install or system package change
 3. Odoo service restart (`systemctl restart odoo19`) affects all tenants — propose and approve separately, never bundle
 4. Module upgrades run as `odoo19` user: `su -s /bin/bash odoo19 -c "source /opt/odoo19/odoo-venv/bin/activate && python3 /opt/odoo19/odoo/odoo-bin --config=/etc/odoo19.conf --database=staging --update=dukaku_barcode --no-http --stop-after-init"`
