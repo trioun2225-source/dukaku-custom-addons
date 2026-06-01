@@ -53,11 +53,13 @@ Labels use `doc._barcode_svg_uri()` — a method on `product.template` that gene
 
 **If PNG is ever needed:** install `pkg-config libcairo2-dev` (system packages) then `pip install rlPyCairo==0.4.0` in the shared venv — requires a VPS snapshot and an Odoo service restart (affects all tenants). Propose and approve separately.
 
-### Hardware gate — PASSED
+### Hardware gate — PASSED (2026-06-01)
 
 Both labels printed on the Xprinter and scanned correctly:
 - EAN-13 decoded to `2000000000015` ✓
 - Code128 decoded to `DK-000001` ✓
+
+**Minor cosmetic follow-up (deferred, non-blocking):** Code128 human-readable text sits slightly crowded against the bars on the 40×30mm label. Scans correctly; tighten the `humanReadable` spacing or reduce font size when convenient — no re-print required for Phase 2 sign-off.
 
 ---
 
