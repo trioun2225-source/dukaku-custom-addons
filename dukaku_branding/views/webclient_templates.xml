@@ -22,9 +22,4 @@
         </xpath>
     </template>
 
-    <!-- Remove "Powered by Odoo" from the login page footer -->
-    <template id="login_remove_powered_by" inherit_id="web.login_layout" name="Remove Powered By (Login)">
-        <xpath expr="//a[@target='_blank' and contains(@href,'odoo.com')]" position="replace"/>
-    </template>
-
 </odoo>
