@@ -23,6 +23,9 @@
         'web.assets_frontend_minimal': [
             'dukaku_ui/static/src/js/dukaku_login_toggle.js',
         ],
+        'point_of_sale._assets_pos': [
+            'dukaku_ui/static/src/xml/pos_receipt_branding.xml',
+        ],
     },
     'installable': True,
     'license': 'LGPL-3',
