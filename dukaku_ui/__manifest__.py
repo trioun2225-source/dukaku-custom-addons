@@ -26,6 +26,9 @@
         'point_of_sale._assets_pos': [
             'dukaku_ui/static/src/xml/pos_receipt_branding.xml',
         ],
+        'point_of_sale.customer_display_assets': [
+            'dukaku_ui/static/src/xml/customer_display_branding.xml',
+        ],
     },
     'installable': True,
     'license': 'LGPL-3',

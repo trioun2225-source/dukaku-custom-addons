@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="dukaku_ui.CustomerDisplayBranding"
+       t-inherit="point_of_sale.CustomerDisplay"
+       t-inherit-mode="extension">
+
+        <!-- Sidebar dark-pill branding -->
+        <xpath expr="//div[hasclass('o_customer_display_sidebar')]/div[hasclass('text-bg-dark')]" position="replace">
+            <div class="position-absolute bottom-0 mb-4 d-none d-lg-flex align-items-center ps-3 pe-2 py-1 rounded-3 text-bg-dark small">
+                Powered by <b class="ms-1">Dukaku</b>
+            </div>
+        </xpath>
+
+        <!-- Main-area bottom branding -->
+        <xpath expr="//div[hasclass('o_customer_display_main')]//div[hasclass('rounded-3') and hasclass('small')]" position="replace">
+            <div class="bottom-0 mb-4 d-flex align-items-center ps-3 pe-2 py-1 rounded-3 small">
+                Powered by <b class="ms-1">Dukaku</b>
+            </div>
+        </xpath>
+
+    </t>
+
+</templates>
