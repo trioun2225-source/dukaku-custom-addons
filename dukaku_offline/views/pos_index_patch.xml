@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Patch the stock POS HTML shell to add the PWA web manifest link and
+        mobile meta tags.
+
+        pos_config_id is a top-level integer in the render context set by
+        PosController.pos_web at line 105:
+            'pos_config_id': pos_session.config_id.id
+        It is NOT nested inside session_info.
+
+        The manifest href resolves to the correct config at request time —
+        no hardcoding, multi-tenant safe.
+
+        start_url in the manifest (/pos/ui/{config_id}) exactly matches the
+        string _get_url_to_cache() puts into urlsToCache, so the SW cache
+        lookup on cold offline launch is a character-for-character hit.
+        The ?from_backend=True variant is intentionally excluded from start_url.
+    -->
+    <template id="dukaku_offline.pos_index_manifest"
+              inherit_id="point_of_sale.index"
+              name="Dukaku POS — PWA manifest">
+        <xpath expr="//link[@rel='icon']" position="after">
+            <link rel="manifest"
+                  t-attf-href="/pos/manifest.json?config_id={{ pos_config_id }}"/>
+            <!-- theme-color matches $dukaku-text (#1A1A1A) from dukaku_theme.scss -->
+            <meta name="theme-color" content="#1A1A1A"/>
+            <!-- iOS standalone / status-bar -->
+            <meta name="apple-mobile-web-app-capable" content="yes"/>
+            <meta name="apple-mobile-web-app-status-bar-style"
+                  content="black-translucent"/>
+            <meta name="apple-mobile-web-app-title" content="Dukaku POS"/>
+        </xpath>
+    </template>
+</odoo>
