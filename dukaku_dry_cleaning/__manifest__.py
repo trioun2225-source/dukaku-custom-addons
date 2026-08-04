@@ -31,8 +31,15 @@ Odoo's core Point of Sale, Contacts, and Inventory apps.
     "data": [
         "security/dry_cleaning_security.xml",
         "security/ir.model.access.csv",
+        "views/dry_cleaning_actions.xml",
         "views/dry_cleaning_menus.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "dukaku_dry_cleaning/static/src/js/coming_soon_action.js",
+            "dukaku_dry_cleaning/static/src/xml/coming_soon_action.xml",
+        ],
+    },
     "demo": [],
     "installable": True,
     "application": True,

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="dukaku_dry_cleaning.ComingSoon">
+        <div class="o_dukaku_dry_cleaning_coming_soon d-flex flex-column align-items-center justify-content-center h-100 text-center p-5">
+            <h2>Dry Cleaning</h2>
+            <p class="text-muted">Order management is under active development. Check back soon.</p>
+        </div>
+    </t>
+</templates>

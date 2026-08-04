@@ -6,6 +6,7 @@
         id="menu_dry_cleaning_root"
         name="Dry Cleaning"
         sequence="25"
+        action="action_dry_cleaning_coming_soon"
         groups="dukaku_dry_cleaning.group_dry_cleaning_user"
         web_icon="dukaku_dry_cleaning,static/description/icon.png"/>
 
