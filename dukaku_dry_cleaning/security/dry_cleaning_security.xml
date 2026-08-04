@@ -8,10 +8,15 @@
         <field name="sequence">20</field>
     </record>
 
+    <record id="res_groups_privilege_dry_cleaning" model="res.groups.privilege">
+        <field name="name">Dukaku Dry Cleaning</field>
+        <field name="category_id" ref="module_category_dry_cleaning"/>
+    </record>
+
     <!-- Groups -->
     <record id="group_dry_cleaning_user" model="res.groups">
         <field name="name">User</field>
-        <field name="category_id" ref="module_category_dry_cleaning"/>
+        <field name="privilege_id" ref="res_groups_privilege_dry_cleaning"/>
         <field name="comment">
             Dry Cleaning Users can create and manage their own orders,
             process POS transactions, and view customer records.
@@ -20,7 +25,7 @@
 
     <record id="group_dry_cleaning_manager" model="res.groups">
         <field name="name">Manager</field>
-        <field name="category_id" ref="module_category_dry_cleaning"/>
+        <field name="privilege_id" ref="res_groups_privilege_dry_cleaning"/>
         <field name="implied_ids" eval="[(4, ref('group_dry_cleaning_user'))]"/>
         <field name="comment">
             Dry Cleaning Managers have full access to all orders across
