@@ -1,1 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dry_cleaning_order_user,dry.cleaning.order.user,model_dry_cleaning_order,group_dry_cleaning_user,1,1,1,0
+access_dry_cleaning_order_manager,dry.cleaning.order.manager,model_dry_cleaning_order,group_dry_cleaning_manager,1,1,1,1
+access_dry_cleaning_order_line_user,dry.cleaning.order.line.user,model_dry_cleaning_order_line,group_dry_cleaning_user,1,1,1,1
+access_dry_cleaning_order_line_manager,dry.cleaning.order.line.manager,model_dry_cleaning_order_line,group_dry_cleaning_manager,1,1,1,1
+access_dry_cleaning_service_type_user,dry.cleaning.service.type.user,model_dry_cleaning_service_type,group_dry_cleaning_user,1,0,0,0
+access_dry_cleaning_service_type_manager,dry.cleaning.service.type.manager,model_dry_cleaning_service_type,group_dry_cleaning_manager,1,1,1,1
