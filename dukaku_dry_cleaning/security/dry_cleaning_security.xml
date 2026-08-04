@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Security Category -->
+    <record id="module_category_dry_cleaning" model="ir.module.category">
+        <field name="name">Dukaku Dry Cleaning</field>
+        <field name="description">Access rights for the Dukaku Dry Cleaning POS module.</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Groups -->
+    <record id="group_dry_cleaning_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_dry_cleaning"/>
+        <field name="comment">
+            Dry Cleaning Users can create and manage their own orders,
+            process POS transactions, and view customer records.
+        </field>
+    </record>
+
+    <record id="group_dry_cleaning_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_dry_cleaning"/>
+        <field name="implied_ids" eval="[(4, ref('group_dry_cleaning_user'))]"/>
+        <field name="comment">
+            Dry Cleaning Managers have full access to all orders across
+            branches, configuration, pricing, and reporting.
+        </field>
+    </record>
+
+</odoo>

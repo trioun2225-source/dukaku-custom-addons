@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+{
+    "name": "Dukaku Dry Cleaning POS",
+    "version": "19.0.1.0.0",
+    "category": "Point of Sale",
+    "summary": "Dry cleaning management and POS integration for the Dukaku ecosystem",
+    "description": """
+Dukaku Dry Cleaning POS
+========================
+Commercial-grade dry cleaning management module for the Dukaku POS ecosystem.
+
+Features (delivered incrementally):
+* Dry cleaning order management (garments, services, pricing, status workflow)
+* Customer preference tracking
+* Barcode / QR code order tracking
+* POS integration (orders, payments, receipts)
+* Multi-company / multi-branch ready
+* Thermal receipt and order ticket printing
+
+This module is an addon within the broader Dukaku ecosystem and depends on
+Odoo's core Point of Sale, Contacts, and Inventory apps.
+""",
+    "author": "Dukaku",
+    "website": "https://www.dukaku.com",
+    "license": "OPL-1",
+    "depends": [
+        "base",
+        "point_of_sale",
+        "contacts",
+    ],
+    "data": [
+        "security/dry_cleaning_security.xml",
+        "security/ir.model.access.csv",
+        "views/dry_cleaning_menus.xml",
+    ],
+    "demo": [],
+    "installable": True,
+    "application": True,
+    "auto_install": False,
+}
