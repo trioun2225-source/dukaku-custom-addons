@@ -1,24 +1,42 @@
 # -*- coding: utf-8 -*-
 {
-    "name": "Dukaku Dry Cleaning POS",
-    "version": "19.0.1.0.0",
+    "name": "Dukaku Dry Cleaning",
+    "version": "19.0.4.0.0",
     "category": "Point of Sale",
-    "summary": "Dry cleaning management and POS integration for the Dukaku ecosystem",
+    "summary": "Garment ticket tracking and tag/barcode system for the Dukaku Point of Sale",
     "description": """
-Dukaku Dry Cleaning POS
-========================
-Commercial-grade dry cleaning management module for the Dukaku POS ecosystem.
+Dukaku Dry Cleaning
+====================
+Extends the Dukaku Point of Sale with garment ticket tracking for dry
+cleaning drop-offs. This module is an extension of the existing POS flow,
+not a standalone application: it does not modify pos.order, pos.order.line,
+or the payment lifecycle, and it carries no pricing or catalog data of its
+own.
 
-Features (delivered incrementally):
-* Dry cleaning order management (garments, services, pricing, status workflow)
-* Customer preference tracking
-* Barcode / QR code order tracking
-* POS integration (orders, payments, receipts)
-* Multi-company / multi-branch ready
-* Thermal receipt and order ticket printing
+Each paid POS order may be linked to one dry cleaning ticket, tracking the
+physical garment through drop_off -> in_progress -> ready -> picked_up.
+
+Stage 2 adds garment tags: when a paid order line's product is flagged
+requires_garment_tag, one uniquely barcoded dry_cleaning.garment_tag record
+is generated per unit of quantity, linked back to its order line, order and
+ticket.
+
+Stage 3 adds an immutable dry_cleaning.event audit log: every ticket state
+change (starting with its initial drop_off) is recorded as its own event,
+written only through dry_cleaning.ticket's centralized _transition_to()
+service, never editable or deletable afterwards.
+
+Stage 4 adds the operational UI and POS integration: backend ticket list/
+form views with workflow buttons, a barcode lookup wizard, batch/reprint
+garment-label printing, a mandatory-customer check for qualifying orders
+(server-authoritative, POS-side UX only), and minimal POS additions - a
+post-payment "print garment labels" action and a small receipt block -
+built entirely on Odoo's standard POS data-loading and report-download
+mechanisms. No second checkout, no new order/payment/tax model.
 
 This module is an addon within the broader Dukaku ecosystem and depends on
-Odoo's core Point of Sale, Contacts, and Inventory apps.
+Odoo's core Point of Sale app and on dukaku_barcode for its thermal label
+paperformat.
 """,
     "author": "Dukaku",
     "website": "https://www.dukaku.com",
@@ -26,27 +44,31 @@ Odoo's core Point of Sale, Contacts, and Inventory apps.
     "depends": [
         "base",
         "point_of_sale",
-        "contacts",
         "mail",
+        "dukaku_barcode",
     ],
     "data": [
         "security/dry_cleaning_security.xml",
-        "security/dry_cleaning_order_rules.xml",
         "security/ir.model.access.csv",
-        "data/dry_cleaning_sequence.xml",
-        "views/dry_cleaning_actions.xml",
-        "views/dry_cleaning_menus.xml",
-        "views/dry_cleaning_service_type_views.xml",
-        "views/dry_cleaning_order_views.xml",
+        "data/dry_cleaning_ticket_sequence.xml",
+        "data/garment_tag_sequence.xml",
+        "views/product_views.xml",
+        "views/dry_cleaning_garment_tag_views.xml",
+        "views/dry_cleaning_event_views.xml",
+        "views/dry_cleaning_ticket_views.xml",
+        "views/dry_cleaning_barcode_lookup_views.xml",
+        "report/dry_cleaning_garment_tag_label.xml",
     ],
     "assets": {
-        "web.assets_backend": [
-            "dukaku_dry_cleaning/static/src/js/coming_soon_action.js",
-            "dukaku_dry_cleaning/static/src/xml/coming_soon_action.xml",
+        "point_of_sale._assets_pos": [
+            "dukaku_dry_cleaning/static/src/app/utils/dry_cleaning_order_validation.js",
+            "dukaku_dry_cleaning/static/src/app/screens/receipt_screen/receipt_screen.js",
+            "dukaku_dry_cleaning/static/src/app/screens/receipt_screen/receipt_screen.xml",
+            "dukaku_dry_cleaning/static/src/app/screens/receipt_screen/receipt/dukaku_dry_cleaning_order_receipt.xml",
         ],
     },
     "demo": [],
     "installable": True,
-    "application": True,
+    "application": False,
     "auto_install": False,
 }

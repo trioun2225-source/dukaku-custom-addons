@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Garment tag number / Code128 barcode. Tenant-scoped uniqueness only -
+         deployment is DB-per-tenant, so no cross-database coordination is needed. -->
+    <record id="seq_dry_cleaning_garment_tag" model="ir.sequence">
+        <field name="name">Dry Cleaning Garment Tag</field>
+        <field name="code">dry_cleaning.garment_tag</field>
+        <field name="prefix">GT-</field>
+        <field name="padding">6</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

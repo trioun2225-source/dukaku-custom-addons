@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Adds a "Print Garment Labels" button next to the standard receipt
+         print buttons, shown only once the order is synced and the server
+         confirms it produced at least one garment tag. -->
+    <t t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('print')][1]/.." position="inside">
+            <button t-if="canPrintDryCleaningLabels"
+                    class="button print btn btn-lg btn-secondary w-100 py-3"
+                    t-on-click="() => doDryCleaningPrint.call()">
+                <i t-attf-class="fa {{doDryCleaningPrint.status === 'loading' ? 'fa-fw fa-spin fa-circle-o-notch' : 'fa-print'}} me-1" />Print Garment Labels
+            </button>
+        </xpath>
+    </t>
+</templates>

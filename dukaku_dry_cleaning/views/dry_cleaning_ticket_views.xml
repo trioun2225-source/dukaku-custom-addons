@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_dry_cleaning_ticket_list" model="ir.ui.view">
+        <field name="name">dry.cleaning.ticket.list</field>
+        <field name="model">dry_cleaning.ticket</field>
+        <field name="arch" type="xml">
+            <list string="Dry Cleaning Tickets" decoration-muted="state == 'picked_up'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="pos_order_id"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'drop_off'"
+                       decoration-warning="state == 'in_progress'"
+                       decoration-success="state in ('ready', 'picked_up')"/>
+                <field name="garment_tag_count" string="Garments"/>
+                <field name="create_date" string="Drop-off"/>
+                <field name="last_event_at" string="Last Activity" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dry_cleaning_ticket_form" model="ir.ui.view">
+        <field name="name">dry.cleaning.ticket.form</field>
+        <field name="model">dry_cleaning.ticket</field>
+        <field name="arch" type="xml">
+            <form string="Dry Cleaning Ticket">
+                <header>
+                    <!-- *_ui variants: same action_start/action_mark_ready/action_pick_up
+                         underneath (unchanged), but turn a stale/rejected transition into
+                         a clear message + automatic reload instead of a generic error
+                         dialog that leaves this view showing obsolete state/buttons. -->
+                    <button name="action_start_ui" type="object" string="Start Processing"
+                            class="btn-primary" invisible="state != 'drop_off'"/>
+                    <button name="action_mark_ready_ui" type="object" string="Mark Ready"
+                            class="btn-primary" invisible="state != 'in_progress'"/>
+                    <button name="action_pick_up_ui" type="object" string="Confirm Pickup"
+                            class="btn-primary" invisible="state != 'ready'"/>
+                    <button name="action_print_garment_tags" type="object"
+                            string="Print Garment Labels" invisible="not garment_tag_ids"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="drop_off,in_progress,ready,picked_up"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="pos_order_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="garment_tag_count"/>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Garments" name="garments">
+                            <field name="garment_tag_ids" readonly="0">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="name" readonly="1" string="Tag Number"/>
+                                    <field name="barcode" readonly="1"/>
+                                    <field name="product_id" readonly="1" string="Service"/>
+                                    <field name="intake_note"/>
+                                    <field name="printed" readonly="1"/>
+                                    <field name="printed_date" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Operational History" name="history">
+                            <field name="event_ids" readonly="1">
+                                <list create="false" edit="false" delete="false">
+                                    <field name="event_at"/>
+                                    <field name="event_type"/>
+                                    <field name="user_id"/>
+                                    <field name="garment_tag_id"/>
+                                    <field name="source"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dry_cleaning_ticket_search" model="ir.ui.view">
+        <field name="name">dry.cleaning.ticket.search</field>
+        <field name="model">dry_cleaning.ticket</field>
+        <field name="arch" type="xml">
+            <search string="Dry Cleaning Tickets">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="pos_order_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <filter name="filter_drop_off" string="Drop Off" domain="[('state', '=', 'drop_off')]"/>
+                <filter name="filter_in_progress" string="In Progress" domain="[('state', '=', 'in_progress')]"/>
+                <filter name="filter_ready" string="Ready" domain="[('state', '=', 'ready')]"/>
+                <filter name="filter_picked_up" string="Picked Up" domain="[('state', '=', 'picked_up')]"/>
+                <separator/>
+                <filter name="filter_today" string="Today"
+                        domain="[('create_date', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
+                                 ('create_date', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <group name="groupby">
+                    <filter name="group_by_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_by_customer" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_by_company" string="Company" context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dry_cleaning_ticket" model="ir.actions.act_window">
+        <field name="name">Dry Cleaning Tickets</field>
+        <field name="res_model">dry_cleaning.ticket</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_dry_cleaning_ticket" name="Tickets"
+          parent="menu_dry_cleaning_root" action="action_dry_cleaning_ticket" sequence="5"/>
+
+</odoo>

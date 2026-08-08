@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_dry_cleaning_barcode_lookup_form" model="ir.ui.view">
+        <field name="name">dry.cleaning.barcode.lookup.form</field>
+        <field name="model">dry_cleaning.barcode_lookup</field>
+        <field name="arch" type="xml">
+            <form string="Barcode Lookup">
+                <sheet>
+                    <group>
+                        <field name="barcode" placeholder="Scan or type a garment barcode..."/>
+                    </group>
+                    <div invisible="not not_found or garment_tag_id" class="alert alert-warning" role="alert">
+                        Barcode <field name="scanned_barcode" readonly="1" nolabel="1" class="fw-bold"/> was not found.
+                    </div>
+                    <group invisible="not garment_tag_id" string="Scanned Garment">
+                        <group>
+                            <field name="garment_tag_id" readonly="1" string="Tag Number"/>
+                            <field name="intake_note"/>
+                        </group>
+                        <group>
+                            <field name="ticket_id" readonly="1"/>
+                            <field name="ticket_state" readonly="1" widget="badge"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="pos_order_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group invisible="not garment_tag_id" string="All Garments on This Ticket">
+                        <field name="sibling_garment_tag_ids" nolabel="1" readonly="1">
+                            <list create="false" edit="false" delete="false">
+                                <field name="name" string="Tag Number"/>
+                                <field name="product_id" string="Service"/>
+                                <field name="printed"/>
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_ticket_start" type="object" string="Start Processing"
+                            class="btn-primary" invisible="ticket_state != 'drop_off'"/>
+                    <button name="action_ticket_mark_ready" type="object" string="Mark Ready"
+                            class="btn-primary" invisible="ticket_state != 'in_progress'"/>
+                    <button name="action_ticket_pick_up" type="object" string="Confirm Pickup"
+                            class="btn-primary" invisible="ticket_state != 'ready'"/>
+                    <button name="action_open_ticket" type="object" string="Open Ticket"
+                            invisible="not garment_tag_id"/>
+                    <button string="Close" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_dry_cleaning_barcode_lookup" model="ir.actions.act_window">
+        <field name="name">Barcode Lookup</field>
+        <field name="res_model">dry_cleaning.barcode_lookup</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_dry_cleaning_barcode_lookup" name="Barcode Lookup"
+          parent="menu_dry_cleaning_root" action="action_dry_cleaning_barcode_lookup" sequence="15"/>
+
+</odoo>

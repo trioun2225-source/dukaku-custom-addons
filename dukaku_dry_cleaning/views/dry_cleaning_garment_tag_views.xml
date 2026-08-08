@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_dry_cleaning_garment_tag_list" model="ir.ui.view">
+        <field name="name">dry.cleaning.garment.tag.list</field>
+        <field name="model">dry_cleaning.garment_tag</field>
+        <field name="arch" type="xml">
+            <list string="Garment Tags">
+                <field name="name"/>
+                <field name="barcode"/>
+                <field name="ticket_id"/>
+                <field name="pos_order_id"/>
+                <field name="printed"/>
+                <field name="printed_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dry_cleaning_garment_tag_form" model="ir.ui.view">
+        <field name="name">dry.cleaning.garment.tag.form</field>
+        <field name="model">dry_cleaning.garment_tag</field>
+        <field name="arch" type="xml">
+            <form string="Garment Tag">
+                <header>
+                    <button name="action_print_garment_tags" type="object"
+                            string="Print Label" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="barcode"/>
+                            <field name="pos_order_line_id"/>
+                            <field name="ticket_id" readonly="1"/>
+                            <field name="pos_order_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="printed"/>
+                            <field name="printed_date"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Intake Note">
+                        <field name="intake_note" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dry_cleaning_garment_tag_search" model="ir.ui.view">
+        <field name="name">dry.cleaning.garment.tag.search</field>
+        <field name="model">dry_cleaning.garment_tag</field>
+        <field name="arch" type="xml">
+            <search string="Garment Tags">
+                <field name="name"/>
+                <field name="barcode"/>
+                <field name="ticket_id"/>
+                <field name="pos_order_id"/>
+                <filter name="filter_not_printed" string="Not Printed" domain="[('printed', '=', False)]"/>
+                <group name="groupby">
+                    <filter name="group_by_ticket" string="Ticket" context="{'group_by': 'ticket_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dry_cleaning_garment_tag" model="ir.actions.act_window">
+        <field name="name">Garment Tags</field>
+        <field name="res_model">dry_cleaning.garment_tag</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_dry_cleaning_root" name="Dry Cleaning"
+          groups="group_dry_cleaning_user" sequence="70"/>
+    <menuitem id="menu_dry_cleaning_garment_tag" name="Garment Tags"
+          parent="menu_dry_cleaning_root" action="action_dry_cleaning_garment_tag" sequence="10"/>
+</odoo>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_dry_cleaning_event_list" model="ir.ui.view">
+        <field name="name">dry.cleaning.event.list</field>
+        <field name="model">dry_cleaning.event</field>
+        <field name="arch" type="xml">
+            <list string="Ticket Events" create="false" edit="false" delete="false">
+                <field name="ticket_id"/>
+                <field name="event_at"/>
+                <field name="event_type"/>
+                <field name="garment_tag_id"/>
+                <field name="user_id"/>
+                <field name="source"/>
+                <field name="note"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dry_cleaning_event_search" model="ir.ui.view">
+        <field name="name">dry.cleaning.event.search</field>
+        <field name="model">dry_cleaning.event</field>
+        <field name="arch" type="xml">
+            <search string="Ticket Events">
+                <field name="ticket_id"/>
+                <field name="garment_tag_id"/>
+                <field name="user_id"/>
+                <group name="groupby">
+                    <filter name="group_by_ticket" string="Ticket" context="{'group_by': 'ticket_id'}"/>
+                    <filter name="group_by_event_type" string="Event Type" context="{'group_by': 'event_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dry_cleaning_event" model="ir.actions.act_window">
+        <field name="name">Ticket Events</field>
+        <field name="res_model">dry_cleaning.event</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'create': False}</field>
+    </record>
+
+    <menuitem id="menu_dry_cleaning_event"
+          name="Ticket Events"
+          parent="menu_dry_cleaning_root"
+          action="action_dry_cleaning_event"
+          sequence="20"/>
+
+</odoo>

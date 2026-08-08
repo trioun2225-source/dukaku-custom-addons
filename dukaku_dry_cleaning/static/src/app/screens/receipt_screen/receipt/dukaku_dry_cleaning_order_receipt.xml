@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Small dry-cleaning block on the digital receipt: ticket number and
+         garment count, both read directly from authoritative server data
+         (pos.order.dry_cleaning_ticket_name / dry_cleaning_garment_tag_count,
+         Stage 4). No id is generated or predicted client-side, and no price
+         or tax is recomputed here - commercial totals stay pos.order's own.
+         Gated on order.finalized, same convention as core's own ticket-portal
+         QR block just above this marker. -->
+    <t t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('before-footer')]" position="before">
+            <div t-if="order.finalized and order.dry_cleaning_ticket_name"
+                 class="pos-receipt-order-data text-center pt-2">
+                <div>Dry Cleaning Ticket: <t t-esc="order.dry_cleaning_ticket_name"/></div>
+                <div t-if="order.dry_cleaning_garment_tag_count">
+                    Garments: <t t-esc="order.dry_cleaning_garment_tag_count"/>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>

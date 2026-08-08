@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="seq_dry_cleaning_order" model="ir.sequence">
-        <field name="name">Dry Cleaning Order</field>
-        <field name="code">dry.cleaning.order</field>
+    <record id="seq_dry_cleaning_ticket" model="ir.sequence">
+        <field name="name">Dry Cleaning Ticket</field>
+        <field name="code">dry_cleaning.ticket</field>
         <field name="prefix">DC/%(year)s/</field>
         <field name="padding">4</field>
         <field name="company_id" eval="False"/>

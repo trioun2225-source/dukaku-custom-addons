@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Report action: appears in Print menu on the garment tag list/form.
+         Works for a single record or a multi-record selection (batch print)
+         with no code difference - Odoo already loops `docs` either way.
+         Reuses dukaku_barcode's thermal paperformat rather than defining a
+         second 40x30mm record. Printer-driver integration is out of scope
+         for Stage 2 - this is the reporting/model foundation only. -->
+    <record id="action_report_dry_cleaning_garment_tag_label" model="ir.actions.report">
+        <field name="name">Garment Tag Label</field>
+        <field name="model">dry_cleaning.garment_tag</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dukaku_dry_cleaning.report_dry_cleaning_garment_tag_label_document</field>
+        <field name="report_file">dukaku_dry_cleaning.report_dry_cleaning_garment_tag_label_document</field>
+        <field name="paperformat_id" ref="dukaku_barcode.paperformat_thermal_label_40x30"/>
+        <field name="binding_model_id" ref="model_dry_cleaning_garment_tag"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_dry_cleaning_garment_tag_label_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <div class="article"
+                     t-att-data-oe-model="doc._name"
+                     t-att-data-oe-id="doc.id">
+                    <div class="page" style="
+                        overflow: hidden;
+                        font-family: Arial, Helvetica, sans-serif;
+                        line-height: 1.2;
+                    ">
+                        <div style="
+                            font-size: 7.5pt;
+                            font-weight: bold;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            margin-bottom: 0.6mm;
+                        ">
+                            <t t-esc="doc.pos_order_line_id.product_id.display_name"/>
+                        </div>
+
+                        <div style="font-size: 6.5pt; margin-bottom: 1mm;">
+                            <t t-esc="doc.ticket_id.name"/>
+                        </div>
+
+                        <img t-att-src="doc._barcode_svg_uri()"
+                             style="display:block;width:100%;max-height:14mm;"/>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -37,4 +37,24 @@
         <field name="implied_ids" eval="[(4, ref('group_dry_cleaning_manager'))]"/>
     </record>
 
+    <!-- Multi-company record rules -->
+    <data noupdate="1">
+
+    <record id="rule_dry_cleaning_ticket_multi_company" model="ir.rule">
+        <field name="name">Dry Cleaning Ticket multi-company</field>
+        <field name="model_id" ref="model_dry_cleaning_ticket"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_dry_cleaning_garment_tag_multi_company" model="ir.rule">
+        <field name="name">Dry Cleaning Garment Tag multi-company</field>
+        <field name="model_id" ref="model_dry_cleaning_garment_tag"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_dry_cleaning_event_multi_company" model="ir.rule">
+        <field name="name">Dry Cleaning Event multi-company</field>
+        <field name="model_id" ref="model_dry_cleaning_event"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    </data>
+
 </odoo>
