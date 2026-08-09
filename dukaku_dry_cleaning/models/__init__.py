@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from . import dry_cleaning_access
 from . import dry_cleaning_ticket
 from . import product_template
 from . import product_product

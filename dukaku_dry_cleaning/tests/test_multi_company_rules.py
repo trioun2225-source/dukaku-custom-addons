@@ -52,14 +52,19 @@ class TestDryCleaningMultiCompanyRules(CommonPosTest):
         self.assertFalse(Ticket.search([("id", "=", ticket.id)]))
         self.assertFalse(GarmentTag.search([("id", "=", tag.id)]))
 
-        # ...nor be reachable for read or write by id. 'state' is not used
-        # here since Stage 3 blocks direct state writes unconditionally
-        # (see test_dry_cleaning_event.py) - 'name' isolates the
-        # record-rule check this test is actually about.
+        # ...nor be reachable for read or write by id. Neither 'state' nor
+        # 'name' is used as the write probe: both are unconditionally
+        # guarded identity fields now (see test_dry_cleaning_event.py and
+        # test_write_surface_hardening.py), so writing either would raise
+        # UserError from that guard before ever reaching the record-rule
+        # check this test is actually about. An empty-dict write touches
+        # no field at all, so it isolates the record-rule check cleanly -
+        # confirmed to still raise AccessError (Odoo's write() enforces
+        # record rules on the browsed ids regardless of vals content).
         with self.assertRaises(AccessError):
             Ticket.browse(ticket.id).read(["name"])
         with self.assertRaises(AccessError):
-            Ticket.browse(ticket.id).write({"name": "hacked"})
+            Ticket.browse(ticket.id).write({})
         with self.assertRaises(AccessError):
             GarmentTag.browse(tag.id).read(["name"])
         with self.assertRaises(AccessError):

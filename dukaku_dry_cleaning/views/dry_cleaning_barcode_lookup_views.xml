@@ -37,11 +37,14 @@
                 </sheet>
                 <footer>
                     <button name="action_ticket_start" type="object" string="Start Processing"
-                            class="btn-primary" invisible="ticket_state != 'drop_off'"/>
+                            class="btn-primary" invisible="ticket_state != 'drop_off'"
+                            groups="group_dry_cleaning_can_process,group_dry_cleaning_manager"/>
                     <button name="action_ticket_mark_ready" type="object" string="Mark Ready"
-                            class="btn-primary" invisible="ticket_state != 'in_progress'"/>
+                            class="btn-primary" invisible="ticket_state != 'in_progress'"
+                            groups="group_dry_cleaning_can_process,group_dry_cleaning_manager"/>
                     <button name="action_ticket_pick_up" type="object" string="Confirm Pickup"
-                            class="btn-primary" invisible="ticket_state != 'ready'"/>
+                            class="btn-primary" invisible="ticket_state != 'ready'"
+                            groups="group_dry_cleaning_can_pickup,group_dry_cleaning_manager"/>
                     <button name="action_open_ticket" type="object" string="Open Ticket"
                             invisible="not garment_tag_id"/>
                     <button string="Close" special="cancel"/>

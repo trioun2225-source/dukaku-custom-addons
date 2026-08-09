@@ -8,3 +8,5 @@ from . import test_ticket_workflow_ui
 from . import test_barcode_lookup_wizard
 from . import test_printing_stage4
 from . import test_pos_print_bookkeeping
+from . import test_stage6_security
+from . import test_write_surface_hardening

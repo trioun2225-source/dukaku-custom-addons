@@ -21,8 +21,16 @@
         <field name="arch" type="xml">
             <form string="Garment Tag">
                 <header>
+                    <!-- Same underlying method for both; server-side
+                         action_print_garment_tags() enforces the Can
+                         Reprint requirement once printed=True. -->
                     <button name="action_print_garment_tags" type="object"
-                            string="Print Label" class="btn-primary"/>
+                            string="Print Label" class="btn-primary"
+                            invisible="printed"/>
+                    <button name="action_print_garment_tags" type="object"
+                            string="Reprint Label" class="btn-primary"
+                            invisible="not printed"
+                            groups="group_dry_cleaning_can_reprint,group_dry_cleaning_manager"/>
                 </header>
                 <sheet>
                     <group>
@@ -40,7 +48,9 @@
                         </group>
                     </group>
                     <group string="Intake Note">
-                        <field name="intake_note" nolabel="1"/>
+                        <field name="ticket_state" invisible="1"/>
+                        <field name="intake_note" nolabel="1"
+                               readonly="ticket_state not in ('drop_off', 'in_progress')"/>
                     </group>
                 </sheet>
             </form>

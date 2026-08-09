@@ -27,18 +27,32 @@
         <field name="arch" type="xml">
             <form string="Dry Cleaning Ticket">
                 <header>
+                    <field name="any_garment_printed" invisible="1"/>
                     <!-- *_ui variants: same action_start/action_mark_ready/action_pick_up
                          underneath (unchanged), but turn a stale/rejected transition into
                          a clear message + automatic reload instead of a generic error
                          dialog that leaves this view showing obsolete state/buttons. -->
                     <button name="action_start_ui" type="object" string="Start Processing"
-                            class="btn-primary" invisible="state != 'drop_off'"/>
+                            class="btn-primary" invisible="state != 'drop_off'"
+                            groups="group_dry_cleaning_can_process,group_dry_cleaning_manager"/>
                     <button name="action_mark_ready_ui" type="object" string="Mark Ready"
-                            class="btn-primary" invisible="state != 'in_progress'"/>
+                            class="btn-primary" invisible="state != 'in_progress'"
+                            groups="group_dry_cleaning_can_process,group_dry_cleaning_manager"/>
                     <button name="action_pick_up_ui" type="object" string="Confirm Pickup"
-                            class="btn-primary" invisible="state != 'ready'"/>
+                            class="btn-primary" invisible="state != 'ready'"
+                            groups="group_dry_cleaning_can_pickup,group_dry_cleaning_manager"/>
+                    <!-- Two buttons, same underlying method: server-side
+                         authorization (action_print_garment_tags) is what
+                         actually enforces the Can Reprint requirement; these
+                         two entries are a UI convenience so a base User only
+                         ever sees a button their click will succeed at. -->
                     <button name="action_print_garment_tags" type="object"
-                            string="Print Garment Labels" invisible="not garment_tag_ids"/>
+                            string="Print Garment Labels"
+                            invisible="not garment_tag_ids or any_garment_printed"/>
+                    <button name="action_print_garment_tags" type="object"
+                            string="Reprint Garment Labels"
+                            invisible="not garment_tag_ids or not any_garment_printed"
+                            groups="group_dry_cleaning_can_reprint,group_dry_cleaning_manager"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="drop_off,in_progress,ready,picked_up"/>
                 </header>
@@ -63,7 +77,8 @@
                                     <field name="name" readonly="1" string="Tag Number"/>
                                     <field name="barcode" readonly="1"/>
                                     <field name="product_id" readonly="1" string="Service"/>
-                                    <field name="intake_note"/>
+                                    <field name="intake_note"
+                                           readonly="parent.state not in ('drop_off', 'in_progress')"/>
                                     <field name="printed" readonly="1"/>
                                     <field name="printed_date" readonly="1"/>
                                 </list>

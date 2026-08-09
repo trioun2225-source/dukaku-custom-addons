@@ -141,12 +141,24 @@ class TestDryCleaningEvent(CommonPosTest):
         with self.assertRaises(UserError):
             ticket.sudo().write({"state": "picked_up"})
 
-    def test_legitimate_non_state_write_still_works(self):
+    def test_state_guard_is_narrow_not_a_blanket_write_block(self):
+        """write() rejects 'state' specifically, not every field - proven
+        here via an empty-dict write, which touches no field at all and so
+        must succeed (record rules still apply and are covered elsewhere;
+        this test is only about the state guard's own scope).
+
+        Previously this test used {'name': 'RELABELLED'} as its "harmless"
+        non-state field - that was test plumbing standing in for "some
+        field write still works", never a frozen requirement that ticket
+        renaming itself be legitimate. A Stage 6 identity-lock review has
+        since frozen dry_cleaning.ticket.name as immutable after creation
+        too (see write()'s _IMMUTABLE_AFTER_CREATE) - that guard is
+        exercised in tests/test_write_surface_hardening.py, not here.
+        """
         order = self._pay_order(self.dry_cleaning_product, 1)
         ticket = order.dry_cleaning_ticket_id
 
-        ticket.write({"name": "RELABELLED"})
-        self.assertEqual(ticket.name, "RELABELLED")
+        ticket.write({})
 
     def test_actions_still_work_and_each_transition_creates_exactly_one_event(self):
         order = self._pay_order(self.dry_cleaning_product, 1)
@@ -209,10 +221,17 @@ class TestDryCleaningEvent(CommonPosTest):
         order = self._pay_order(self.dry_cleaning_product, 1)
         ticket = order.dry_cleaning_ticket_id
 
+        # Stage 6: action_start() now requires the Can Process capability
+        # (or Manager) - a plain base-User cashier can no longer call it,
+        # so this fixture needs Can Process too. The test's actual subject
+        # (actor attribution on the resulting event) is unaffected.
         cashier = self.env["res.users"].create({
             "name": "Dry Cleaning Cashier",
             "login": "dry_cleaning_cashier_stage3",
-            "group_ids": [(6, 0, self.env.ref("dukaku_dry_cleaning.group_dry_cleaning_user").ids)],
+            "group_ids": [(6, 0, (
+                self.env.ref("dukaku_dry_cleaning.group_dry_cleaning_user")
+                | self.env.ref("dukaku_dry_cleaning.group_dry_cleaning_can_process")
+            ).ids)],
         })
         ticket.with_user(cashier).action_start()
 

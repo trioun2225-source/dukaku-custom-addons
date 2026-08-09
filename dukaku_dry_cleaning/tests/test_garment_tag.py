@@ -118,8 +118,12 @@ class TestDryCleaningGarmentTag(CommonPosTest):
         line = order.lines[0]
         existing_tag = line.garment_tag_ids
 
+        # sudo() to reach the model-level constraint itself: create is no
+        # longer ACL-permitted for any group (Stage 6), so a plain create()
+        # here would raise AccessError before ever reaching the DB - this
+        # test is about the barcode uniqueness constraint, not the ACL.
         with mute_logger("odoo.sql_db"), self.assertRaises(IntegrityError):
-            self.env["dry_cleaning.garment_tag"].create({
+            self.env["dry_cleaning.garment_tag"].sudo().create({
                 "pos_order_line_id": line.id,
                 "barcode": existing_tag.barcode,
                 "name": "DUPLICATE",

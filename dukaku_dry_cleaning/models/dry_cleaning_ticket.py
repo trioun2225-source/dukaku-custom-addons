@@ -30,11 +30,48 @@ class DryCleaningTicket(models.Model):
 
     _name = "dry_cleaning.ticket"
     _description = "Dry Cleaning Ticket"
-    _inherit = ["mail.thread"]
+    _inherit = ["mail.thread", "dry_cleaning.access.mixin"]
     _order = "id desc"
 
     # Forward-only workflow; each state may only advance to the next one.
     _STATE_SEQUENCE = ["drop_off", "in_progress", "ready", "picked_up"]
+
+    # Stage 6 write-surface hardening: field-level readonly=True is a view
+    # hint only and does not stop a direct write()/RPC call (verified
+    # empirically - see Stage 6 audit). Set once at create() time (name via
+    # the sequence default in create(), pos_order_id via vals) and never
+    # legitimately reassigned after.
+    #
+    # name: the server-generated operational ticket identifier - used on
+    # receipts, customer references, search, staff communication, audit
+    # history, and future integrations, so it must stay stable for the
+    # ticket's whole lifetime. An earlier version of this guard left name
+    # writable, reasoning that nothing scans/matches against it the way a
+    # garment tag's barcode does; a Stage 6 identity-lock review overrides
+    # that judgment call - the operational uses above are a real identity
+    # requirement even without a physical scan. The Stage 3 test that used
+    # to exercise renaming as "legitimate" was test plumbing, not a frozen
+    # business requirement, and has been updated accordingly.
+    #
+    # pos_order_id: a paid POS order is the ticket's whole reason for
+    # existing, so re-pointing it elsewhere would sever the audit trail
+    # from the transaction it actually describes.
+    _IMMUTABLE_AFTER_CREATE = frozenset({"name", "pos_order_id"})
+    # related+store fields: writing one directly does NOT cascade through
+    # the relation (Odoo only wires an inverse when the related field is
+    # NOT readonly - these all are), but it DOES silently overwrite this
+    # record's own stored column, diverging from the true related value -
+    # e.g. company_id could be set to a value that no longer matches
+    # pos_order_id.company_id, corrupting the very field the multi-company
+    # record rule filters on. 'active' is included here too: it is a
+    # stored compute with no inverse, so a direct write would similarly
+    # persist a value that silently overrides _compute_active's own
+    # judgment - effectively a soft-delete/hide path that would defeat the
+    # "unlink denied to everyone" audit-retention guarantee through a
+    # different door. The internal recompute that keeps all of these in
+    # sync writes through the field cache directly (never calls this
+    # model's write()), so it is unaffected by the guard.
+    _DERIVED_READONLY_FIELDS = frozenset({"company_id", "partner_id", "active"})
 
     name = fields.Char(
         required=True, copy=False, readonly=True, default=lambda self: _("New")
@@ -89,6 +126,15 @@ class DryCleaningTicket(models.Model):
     last_event_at = fields.Datetime(
         compute="_compute_last_event_id", string="Last Activity At"
     )
+    any_garment_printed = fields.Boolean(
+        compute="_compute_any_garment_printed",
+        help="UI-only convenience: lets the form show a plain 'Print' "
+             "button while nothing has been printed yet, and switch to a "
+             "capability-gated 'Reprint' button once anything has. This is "
+             "a visibility aid only - action_print_garment_tags() enforces "
+             "the actual Can Reprint check server-side regardless of what "
+             "this field says.",
+    )
 
     _pos_order_uniq = models.Constraint(
         "unique(pos_order_id)",
@@ -110,6 +156,13 @@ class DryCleaningTicket(models.Model):
         for ticket in self:
             ticket.garment_tag_count = len(ticket.garment_tag_ids)
 
+    @api.depends("garment_tag_ids.printed")
+    def _compute_any_garment_printed(self):
+        for ticket in self:
+            ticket.any_garment_printed = bool(
+                ticket.garment_tag_ids.filtered("printed")
+            )
+
     @api.depends("event_ids")
     def _compute_last_event_id(self):
         for ticket in self:
@@ -121,18 +174,28 @@ class DryCleaningTicket(models.Model):
             ticket.last_event_at = last_event.event_at
 
     def write(self, vals):
-        """Reject direct writes to 'state' from outside this class.
+        """Reject direct writes to 'state' from outside this class, plus the
+        identity/derived-field guards below.
 
         _transition_to() is the only legitimate path for a state change; it
         bypasses this check entirely by calling super(DryCleaningTicket,
         self).write() directly rather than going through this method, so it
-        is unaffected by the guard below. Every other field remains
-        writable as normal.
+        is unaffected by the guard below.
         """
         if "state" in vals:
             raise UserError(_(
                 "dry_cleaning.ticket.state cannot be written directly. "
                 "Use action_start / action_mark_ready / action_pick_up instead."
+            ))
+        if self._IMMUTABLE_AFTER_CREATE.intersection(vals):
+            raise UserError(_(
+                "dry_cleaning.ticket.name and pos_order_id are the "
+                "ticket's identity and cannot be changed after creation."
+            ))
+        if self._DERIVED_READONLY_FIELDS.intersection(vals):
+            raise UserError(_(
+                "company_id, partner_id, and active are derived from "
+                "pos_order_id and cannot be set directly."
             ))
         return super().write(vals)
 
@@ -163,11 +226,24 @@ class DryCleaningTicket(models.Model):
         """Return the ticket for pos_order, creating one if none exists yet.
 
         Reuses create() as-is (sequence naming), so ticket-creation logic
-        stays in one place.
+        stays in one place. Stage 6: create is no longer ACL-permitted for
+        any group (tickets are infrastructure records, not directly
+        user-creatable) - sudo() is required here for that reason alone.
+        The only value passed in is pos_order.id, an existing record this
+        method already received as an argument (never raw user-supplied
+        data), so there is nothing here for an elevated create() to launder.
+        This is the sole ticket-creation path other than the row already
+        covered by create()'s own docstring below.
         """
         ticket = self.search([("pos_order_id", "=", pos_order.id)], limit=1)
         if not ticket:
-            ticket = self.create({"pos_order_id": pos_order.id})
+            # .with_env(self.env) immediately after create() hands back a
+            # recordset in the caller's own environment, so the elevation
+            # is scoped to this one create() call and nothing downstream
+            # silently keeps operating as superuser.
+            ticket = self.sudo().create(
+                {"pos_order_id": pos_order.id}
+            ).with_env(self.env)
         return ticket
 
     def _check_transition(self, target_state):
@@ -212,15 +288,24 @@ class DryCleaningTicket(models.Model):
         ])
 
     def action_start(self):
-        """Transition drop_off -> in_progress."""
+        """Transition drop_off -> in_progress.
+
+        Authorization is checked here - the lowest reusable business
+        method - rather than only in the *_ui wrapper or the barcode
+        wizard, so every caller (form button, wizard, direct RPC) is
+        covered by the same check with nothing to bypass.
+        """
+        self._ensure_authorized("process")
         self._transition_to("in_progress")
 
     def action_mark_ready(self):
         """Transition in_progress -> ready."""
+        self._ensure_authorized("process")
         self._transition_to("ready")
 
     def action_pick_up(self):
         """Transition ready -> picked_up."""
+        self._ensure_authorized("pickup")
         self._transition_to("picked_up")
 
     def _ui_wrap_transition(self, method_name):

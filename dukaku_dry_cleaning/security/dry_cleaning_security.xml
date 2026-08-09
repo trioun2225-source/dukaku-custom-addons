@@ -23,13 +23,52 @@
         </field>
     </record>
 
-    <record id="group_dry_cleaning_manager" model="res.groups">
-        <field name="name">Manager</field>
+    <!-- Capability groups: each implies the base User group only. Stage 5
+         hybrid model - these compose independently of job title so a
+         single-employee shop can hold all three, while a larger shop can
+         split them across employees. None of these imply Manager. -->
+    <record id="group_dry_cleaning_can_process" model="res.groups">
+        <field name="name">Can Process</field>
         <field name="privilege_id" ref="res_groups_privilege_dry_cleaning"/>
         <field name="implied_ids" eval="[(4, ref('group_dry_cleaning_user'))]"/>
         <field name="comment">
-            Dry Cleaning Managers have full access to all orders across
-            branches, configuration, pricing, and reporting.
+            Can start processing and mark tickets ready.
+        </field>
+    </record>
+
+    <record id="group_dry_cleaning_can_pickup" model="res.groups">
+        <field name="name">Can Pickup</field>
+        <field name="privilege_id" ref="res_groups_privilege_dry_cleaning"/>
+        <field name="implied_ids" eval="[(4, ref('group_dry_cleaning_user'))]"/>
+        <field name="comment">
+            Can confirm garment pickup.
+        </field>
+    </record>
+
+    <record id="group_dry_cleaning_can_reprint" model="res.groups">
+        <field name="name">Can Reprint</field>
+        <field name="privilege_id" ref="res_groups_privilege_dry_cleaning"/>
+        <field name="implied_ids" eval="[(4, ref('group_dry_cleaning_user'))]"/>
+        <field name="comment">
+            Can reprint an already-printed garment label.
+        </field>
+    </record>
+
+    <record id="group_dry_cleaning_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="privilege_id" ref="res_groups_privilege_dry_cleaning"/>
+        <field name="implied_ids" eval="[
+            (4, ref('group_dry_cleaning_user')),
+            (4, ref('group_dry_cleaning_can_process')),
+            (4, ref('group_dry_cleaning_can_pickup')),
+            (4, ref('group_dry_cleaning_can_reprint')),
+        ]"/>
+        <field name="comment">
+            Dry Cleaning Managers have full operational access to all
+            dry-cleaning workflow actions, within their allowed companies.
+            This does not grant broader Odoo administration (product
+            configuration remains under standard Odoo product-access
+            groups; see product_views.xml).
         </field>
     </record>
 
