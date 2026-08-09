@@ -4,9 +4,10 @@
     'summary': 'Dukaku brand theme, dark mode toggle, hides Discuss, sets POS as home',
     'author': 'Dukaku',
     'category': 'Technical',
-    'depends': ['mail', 'point_of_sale', 'web'],
+    'depends': ['mail', 'point_of_sale', 'web', 'auth_signup'],
     'data': [
         'views/hide_discuss.xml',
+        'views/auth_signup_branding.xml',
         'views/assets.xml',
     ],
     'assets': {
@@ -32,4 +33,5 @@
     },
     'installable': True,
     'license': 'LGPL-3',
+    'post_init_hook': 'post_init_hook',
 }
