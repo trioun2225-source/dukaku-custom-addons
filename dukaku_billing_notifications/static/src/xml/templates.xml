@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- The banner itself: a fixed-position toast (see scss). Renders nothing
+         when there is no current notification, so it never shifts POS layout. -->
+    <t t-name="dukaku_billing_notifications.Banner">
+        <div t-if="notif" t-attf-class="dukaku-billing-banner dukaku-billing-banner--{{ notif.urgency }}">
+            <span class="dukaku-billing-banner__msg" t-esc="notif.message"/>
+            <span class="dukaku-billing-banner__actions">
+                <button t-if="notif.renew_url" type="button"
+                        class="btn btn-sm dukaku-billing-banner__renew"
+                        t-on-click="onRenew">Renouveler</button>
+                <button type="button"
+                        class="btn btn-sm dukaku-billing-banner__dismiss"
+                        t-on-click="onDismiss">Fermer</button>
+            </span>
+        </div>
+    </t>
+
+    <!-- Mount the banner inside the always-present POS topheader (keeps the
+         Navbar single-root; the toast's fixed positioning handles placement). -->
+    <t t-name="dukaku_billing_notifications.NavbarBanner"
+       t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('pos-topheader')]" position="inside">
+            <DukakuBillingBanner/>
+        </xpath>
+    </t>
+
+</templates>
