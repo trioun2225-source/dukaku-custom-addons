@@ -358,11 +358,16 @@ class TestDryCleaningOfflineSync(CommonPosTest):
         ticket_b.invalidate_recordset()
         self.assertEqual(ticket_b.state, "in_progress")
 
-    def test_34b_stream_blocked_operation_uid_stays_rejected_forever(self):
+    def test_34b_stream_blocked_uid_stays_rejected_within_retention_window(self):
         """Stage 8A UID-determinism fix: a DEPENDENT_STREAM_BLOCKED
         operation_uid must never resolve to a second, different canonical
         outcome - not even on a later, separate submission after the
-        underlying conflict has been resolved (items 9-11)."""
+        underlying conflict has been resolved (items 9-11) - for as long
+        as its row exists. (Terminal rows are only eligible for cleanup
+        after the 90-day retention window - see
+        _cron_cleanup_terminal_operations() - at which point a
+        resubmission is no longer recognized at all, not given a second
+        canonical outcome.)"""
         ticket_a, tag_a = self._ticket_and_tag()
         blocked_streams = set()
         self._process(

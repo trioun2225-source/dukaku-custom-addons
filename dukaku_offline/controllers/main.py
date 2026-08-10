@@ -157,8 +157,13 @@ def _reject_without_row(operation_uid, reason_code, reason_message, is_duplicate
     determinism fix - it must receive a normal, persisted, terminal
     canonical row (see the DEPENDENT_STREAM_BLOCKED handling below),
     because one operation_uid must correspond to exactly one canonical
-    server outcome forever, not a transient in-batch skip that a later,
-    separate submission could re-litigate.
+    server outcome within the server idempotency-retention window, not a
+    transient in-batch skip that a later, separate submission could
+    re-litigate. (A row is only eligible for cleanup after the 90-day
+    terminal-operation retention period - see
+    _cron_cleanup_terminal_operations() - after which a resubmission of
+    the same operation_uid is no longer recognized at all, a documented
+    V1 limitation, not a second canonical outcome for a live row.)
     """
     return {
         'operation_uid': operation_uid, 'status': 'rejected', 'is_duplicate': is_duplicate,
