@@ -7,3 +7,4 @@ from . import pos_order
 from . import pos_order_line
 from . import dry_cleaning_garment_tag
 from . import dry_cleaning_event
+from . import offline_handlers

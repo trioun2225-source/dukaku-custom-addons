@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Dukaku Dry Cleaning",
-    "version": "19.0.4.0.0",
+    "version": "19.0.5.0.0",
     "category": "Point of Sale",
     "summary": "Garment ticket tracking and tag/barcode system for the Dukaku Point of Sale",
     "description": """
@@ -34,9 +34,16 @@ post-payment "print garment labels" action and a small receipt block -
 built entirely on Odoo's standard POS data-loading and report-download
 mechanisms. No second checkout, no new order/payment/tax model.
 
+Stage 8 registers three offline-queueable operations (Start Processing, Mark
+Ready, intake-note update) against dukaku_offline's generic, vertical-agnostic
+synchronization registry - each a thin wrapper around the existing frozen
+business method, so authorization, transition validity, and event creation
+are never duplicated. Confirm Pickup, printing, and reprinting remain
+online-only by having no registered handler at all.
+
 This module is an addon within the broader Dukaku ecosystem and depends on
-Odoo's core Point of Sale app and on dukaku_barcode for its thermal label
-paperformat.
+Odoo's core Point of Sale app, on dukaku_barcode for its thermal label
+paperformat, and on dukaku_offline for offline-operation synchronization.
 """,
     "author": "Dukaku",
     "website": "https://www.dukaku.com",
@@ -46,6 +53,7 @@ paperformat.
         "point_of_sale",
         "mail",
         "dukaku_barcode",
+        "dukaku_offline",
     ],
     "data": [
         "security/dry_cleaning_security.xml",

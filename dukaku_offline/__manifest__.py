@@ -10,10 +10,22 @@
           launch works without any redirect or network round-trip
         - Template patch adds <link rel="manifest"> to the POS HTML head, resolving
           the correct config_id at request time (multi-tenant safe, no hardcoding)
+
+        Stage 8 adds a generic, vertical-agnostic offline-operation synchronization
+        layer (dukaku.offline.operation + a closed handler registry other Dukaku
+        modules register into): idempotent, authenticated, per-user-isolated queue
+        processing for offline-queued business operations. Contains no reference to
+        any vertical's own models - a vertical module (e.g. dukaku_dry_cleaning)
+        depends on this module and registers its own handlers, never the reverse.
     """,
     'author': 'Dukaku',
     'depends': ['point_of_sale'],
-    'data': ['views/pos_index_patch.xml'],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/pos_index_patch.xml',
+        'views/offline_operation_views.xml',
+        'data/offline_operation_cron.xml',
+    ],
     'assets': {
         'point_of_sale._assets_pos': [
             'dukaku_offline/static/src/app/offline_guard.js',

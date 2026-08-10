@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- 90-day retention (Stage 7 §22/Stage 8 §35): terminal (accepted/
+             rejected) rows only - _cron_cleanup_terminal_operations() never
+             touches a pending row regardless of age. -->
+        <record id="ir_cron_dukaku_offline_operation_cleanup" model="ir.cron">
+            <field name="name">Dukaku Offline: clean up terminal operation records</field>
+            <field name="model_id" ref="model_dukaku_offline_operation"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_cleanup_terminal_operations()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active">True</field>
+        </record>
+    </data>
+</odoo>
