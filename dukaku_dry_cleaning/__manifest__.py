@@ -98,6 +98,12 @@ views and POS front-desk flow are unchanged and remain fully available.
         # services: rpc/user/notification/registry) plus the lightweight,
         # POS-independent `barcodes` scanner-input service, exactly as
         # justified in the Stage 8B completion report.
+        #
+        # NOTE: unverified — nothing in the current test suite or enabled
+        # routes actually triggers Odoo to resolve this bundle yet (the
+        # route and menu that would reach it are disabled pending Stage
+        # 8B). Sanity check this loads cleanly the moment static/src/ops/
+        # starts getting populated in Stage 8B.
         "dukaku_dry_cleaning.assets_ops": [
             ("include", "web._assets_helpers"),
             "web/static/src/scss/pre_variables.scss",
