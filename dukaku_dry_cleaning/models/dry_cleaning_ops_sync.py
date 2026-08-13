@@ -131,6 +131,16 @@ class DryCleaningTicketOpsSync(models.Model):
         the correctness property that actually matters here: a real
         change is never silently missed. No id-based exclusion is used at
         all, for the same reason.
+
+        KNOWN EDGE CASE (liveness, not correctness/security): if more than
+        `limit` (200) rows ever share the exact same microsecond-precision
+        write_date, _ops_cursor_point advances the cursor to that shared
+        timestamp and the `>=` filter re-fetches the same full page next
+        call, so the cursor stops advancing rather than skipping anything.
+        Not expected under normal shop traffic - would need something like
+        a bulk import/migration writing 200+ dry_cleaning.ticket or
+        garment_tag rows inside a single transaction. Noting so it isn't
+        forgotten if such a bulk-write path is ever added.
         """
         if not point:
             return []
