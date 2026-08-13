@@ -516,3 +516,219 @@ class TestDryCleaningOfflineSync(CommonPosTest):
         self.assertEqual(r3["reason_code"], "NOT_AUTHORIZED")
         ticket.invalidate_recordset()
         self.assertEqual(ticket.state, "ready")
+
+
+@odoo.tests.tagged("post_install", "-at_install")
+class TestDryCleaningOfflineSyncCrossCompany(CommonPosTest):
+    """Stage 8A blocking-remediation coverage (independent review gap):
+    the offline-operation dispatch path - _process_one_operation(), the
+    exact same function every test above exercises via self._process(),
+    which submit_operations() itself calls per-operation - must deny a
+    Company B user's offline operation against a Company A dry-cleaning
+    ticket/garment tag.
+
+    Relies on nothing bespoke to the offline path: offline_handlers.py has
+    no company check of its own, no sudo() of its own, and resolves every
+    target under the caller's own env (see offline_handlers.py's
+    _resolve_ticket/_offline_update_intake_note) - so this is exercising
+    the same frozen multi-company ir.rule
+    (rule_dry_cleaning_ticket_multi_company /
+    rule_dry_cleaning_garment_tag_multi_company) already proven for the
+    online path in test_stage6_security.py's cross-company tests, through
+    the new offline entry point specifically.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.dry_cleaning_product = cls.ten_dollars_no_tax
+        cls.dry_cleaning_product.requires_garment_tag = True
+
+        cls.company_b = cls.setup_other_company()["company"]
+        # This class's own env.user stays a legitimate Company-A-only
+        # actor (same restriction, in the same order, as
+        # test_stage6_security.py applies to itself - setup_other_company()
+        # first, narrowed afterward) so Company A fixtures below are
+        # provisioned through the project's normal POS payment path, not a
+        # cross-company shortcut.
+        cls.env.user.company_ids = [(6, 0, cls.env.company.ids)]
+        base_user_group = cls.env.ref("base.group_user")
+        group_manager = cls.env.ref("dukaku_dry_cleaning.group_dry_cleaning_manager")
+        # Manager group (all three dry-cleaning capabilities) so any
+        # denial observed below can only be explained by company
+        # isolation, never by a missing capability - company_ids
+        # deliberately excludes Company A.
+        cls.company_b_manager = cls.env["res.users"].sudo().create({
+            "name": "Company B Dry Cleaning Manager",
+            "login": "offline_cross_company_manager",
+            "company_id": cls.company_b.id,
+            "company_ids": [(6, 0, cls.company_b.ids)],
+            "group_ids": [(6, 0, (group_manager | base_user_group).ids)],
+        })
+
+    def _pay_order(self, product=None, qty=1, partner=None):
+        order, _refund = self.create_backend_pos_order({
+            "line_data": [{
+                "product_id": (product or self.dry_cleaning_product).product_variant_id.id,
+                "qty": qty,
+            }],
+            "payment_data": [{"payment_method_id": self.cash_payment_method.id}],
+            "order_data": {"partner_id": (partner or self.partner_adgu).id},
+        })
+        return order
+
+    def _company_a_ticket_and_tag(self):
+        """A fresh Company A ticket+tag per test case, via the same
+        legitimate POS payment path TestDryCleaningOfflineSync uses -
+        isolated so one case can never affect another."""
+        order = self._pay_order()
+        return order.dry_cleaning_ticket_id, order.lines[0].garment_tag_ids
+
+    def _process(self, user, op):
+        """The exact same dispatch function submit_operations() calls per
+        operation - never the handler method directly, and never sudo:
+        self.env(user=...) is the authenticated Company B user's own
+        real, non-sudo environment."""
+        return _process_one_operation(self.env(user=user), op, set())
+
+    def _assert_denied_and_untouched(self, op, result, ticket, tag=None,
+                                      expected_note=False, tickets_before=None,
+                                      tags_before=None, events_before=None):
+        """Shared assertions for all three handlers below."""
+        self.assertEqual(
+            result["status"], "rejected",
+            "must be a controlled terminal denial - never 'accepted', and never "
+            "'error' (which would mean an uncontrolled/infrastructure failure "
+            "rather than a clean company-isolation denial)",
+        )
+        self.assertTrue(result["reason_code"], "a terminal rejection must carry a reason_code")
+
+        ticket_sudo = ticket.sudo()
+        ticket_sudo.invalidate_recordset()
+        self.assertEqual(
+            ticket_sudo.state, "drop_off",
+            "the Company A ticket's authoritative state must be completely unchanged",
+        )
+        if tag is not None:
+            tag_sudo = tag.sudo()
+            tag_sudo.invalidate_recordset()
+            self.assertEqual(
+                tag_sudo.intake_note, expected_note,
+                "the Company A garment tag's intake note must be exactly unchanged",
+            )
+
+        self.assertEqual(
+            self.env["dry_cleaning.event"].sudo().search_count([("ticket_id", "=", ticket.id)]),
+            events_before,
+            "no unauthorized dry_cleaning.event may be created",
+        )
+        self.assertEqual(
+            self.env["dry_cleaning.ticket"].sudo().search_count([]),
+            tickets_before,
+            "no new dry_cleaning.ticket may be created",
+        )
+        self.assertEqual(
+            self.env["dry_cleaning.garment_tag"].sudo().search_count([]),
+            tags_before,
+            "no new dry_cleaning.garment_tag may be created",
+        )
+
+        # The offline bookkeeping row must record the REAL authenticated
+        # Company B submitter/company - never anything derived from the
+        # target record or the client-supplied payload (payload never
+        # even contains a user/company field for any of these three
+        # operation types).
+        op_rec = self.env["dukaku.offline.operation"].sudo().search(
+            [("operation_uid", "=", op["operation_uid"])]
+        )
+        self.assertEqual(len(op_rec), 1)
+        self.assertEqual(op_rec.submitted_by_user_id, self.company_b_manager)
+        self.assertEqual(op_rec.submission_company_id, self.company_b)
+
+    def test_cross_company_start_processing_is_denied(self):
+        ticket, tag = self._company_a_ticket_and_tag()
+        tickets_before = self.env["dry_cleaning.ticket"].sudo().search_count([])
+        tags_before = self.env["dry_cleaning.garment_tag"].sudo().search_count([])
+        events_before = self.env["dry_cleaning.event"].sudo().search_count(
+            [("ticket_id", "=", ticket.id)]
+        )
+
+        op = _op("dry_cleaning.start_processing", target=ticket.id)
+        result = self._process(self.company_b_manager, op)
+
+        self._assert_denied_and_untouched(
+            op, result, ticket, tag=tag, expected_note=False,
+            tickets_before=tickets_before, tags_before=tags_before, events_before=events_before,
+        )
+        # Reported, not asserted as the only acceptable value, per the
+        # remediation task's instruction not to normalize denial codes
+        # across handlers - see the pre-commit report for the exact
+        # observed values.
+        self.assertEqual(result["reason_code"], "NOT_AUTHORIZED")
+
+    def test_cross_company_mark_ready_is_denied(self):
+        ticket, tag = self._company_a_ticket_and_tag()
+        # Legitimate Company A setup only (never the operation under
+        # test): advance the ticket to a state where Mark Ready would
+        # otherwise be valid, so the denial observed below can only be
+        # attributed to company isolation, never to an unrelated invalid-
+        # transition rejection.
+        ticket.sudo().action_start()
+        tickets_before = self.env["dry_cleaning.ticket"].sudo().search_count([])
+        tags_before = self.env["dry_cleaning.garment_tag"].sudo().search_count([])
+        events_before = self.env["dry_cleaning.event"].sudo().search_count(
+            [("ticket_id", "=", ticket.id)]
+        )
+
+        op = _op("dry_cleaning.mark_ready", target=ticket.id)
+        result = self._process(self.company_b_manager, op)
+
+        self.assertEqual(result["status"], "rejected")
+        self.assertTrue(result["reason_code"])
+        ticket_sudo = ticket.sudo()
+        ticket_sudo.invalidate_recordset()
+        self.assertEqual(
+            ticket_sudo.state, "in_progress",
+            "the Company A ticket must remain exactly where legitimate setup left it",
+        )
+        self.assertEqual(
+            self.env["dry_cleaning.event"].sudo().search_count([("ticket_id", "=", ticket.id)]),
+            events_before,
+            "no unauthorized dry_cleaning.event may be created",
+        )
+        self.assertEqual(
+            self.env["dry_cleaning.ticket"].sudo().search_count([]), tickets_before,
+        )
+        self.assertEqual(
+            self.env["dry_cleaning.garment_tag"].sudo().search_count([]), tags_before,
+        )
+        op_rec = self.env["dukaku.offline.operation"].sudo().search(
+            [("operation_uid", "=", op["operation_uid"])]
+        )
+        self.assertEqual(len(op_rec), 1)
+        self.assertEqual(op_rec.submitted_by_user_id, self.company_b_manager)
+        self.assertEqual(op_rec.submission_company_id, self.company_b)
+        self.assertEqual(result["reason_code"], "NOT_AUTHORIZED")
+
+    def test_cross_company_intake_note_update_is_denied(self):
+        ticket, tag = self._company_a_ticket_and_tag()
+        # Legitimate Company A setup only: give the tag a known original
+        # note so a corrupted-vs-unchanged note is unambiguous.
+        tag.sudo().write({"intake_note": "original company A note"})
+        tickets_before = self.env["dry_cleaning.ticket"].sudo().search_count([])
+        tags_before = self.env["dry_cleaning.garment_tag"].sudo().search_count([])
+        events_before = self.env["dry_cleaning.event"].sudo().search_count(
+            [("ticket_id", "=", ticket.id)]
+        )
+
+        op = _op(
+            "dry_cleaning.update_intake_note",
+            payload={"garment_tag_id": tag.id, "note": "company B should never see this"},
+        )
+        result = self._process(self.company_b_manager, op)
+
+        self._assert_denied_and_untouched(
+            op, result, ticket, tag=tag, expected_note="original company A note",
+            tickets_before=tickets_before, tags_before=tags_before, events_before=events_before,
+        )
+        self.assertEqual(result["reason_code"], "NOT_AUTHORIZED")
