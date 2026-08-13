@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Stage 8B: convenience launcher only - a plain link into the
+         standalone workspace route. The route itself re-checks access
+         server-side regardless of this menu's groups= (Stage 8B §8), so
+         this is UX only, never the enforcement point. -->
+
+    <!-- Disabled: the target route (/dukaku_dry_cleaning/ops) is disabled
+         in controllers/dry_cleaning_ops.py because its frontend
+         (static/src/ops/) does not exist on disk yet, and the backend has
+         not had a Claude review pass. Re-enable this record together with
+         that route, not independently. See "Stage 8A Remediation & Review
+         Prep" task spec.
+    <record id="action_dry_cleaning_ops" model="ir.actions.act_url">
+        <field name="name">Dry Cleaning Operations</field>
+        <field name="url">/dukaku_dry_cleaning/ops</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_dry_cleaning_ops" name="Operations Workspace"
+          parent="menu_dry_cleaning_root" action="action_dry_cleaning_ops"
+          groups="group_dry_cleaning_can_process,group_dry_cleaning_manager"
+          sequence="1"/>
+    -->
+
+</odoo>

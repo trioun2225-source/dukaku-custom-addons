@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!-- Stage 8B: Dry Cleaning Operations Workspace application shell.
+     Mirrors point_of_sale's own index-template pattern (odoo = {csrf_token,
+     __session_info__} bootstrap + a single, module-scoped asset bundle via
+     t-call-assets) - the proven in-repo pattern - without depending on
+     point_of_sale's own template, route, or bundle at all. -->
+<template id="ops_index" name="Dry Cleaning Operations Index">&lt;!DOCTYPE html&gt;
+<html>
+    <head>
+        <title>Dry Cleaning Operations</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta http-equiv="content-type" content="text/html, charset=utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, interactive-widget=resizes-content"/>
+
+        <script type="text/javascript">
+            var odoo = <t t-out="json.dumps({
+                'csrf_token': request.csrf_token(None),
+                '__session_info__': session_info,
+            })"/>;
+            // Same reasoning as point_of_sale.index: this is a small,
+            // purpose-built workspace, not the backend webclient - do not
+            // let the menu service try to load the full backend menu tree.
+            odoo.loadMenusPromise = Promise.resolve();
+        </script>
+
+        <t t-call-assets="dukaku_dry_cleaning.assets_ops"/>
+    </head>
+    <body class="o_dc_ops">
+    </body>
+</html>
+</template>
+
+<!-- Server-side denial page for a user who is authenticated but lacks the
+     Can Process / Manager capability - Stage 8B §8: direct route access is
+     protected here, not only by hiding a navigation link. -->
+<template id="ops_unauthorized" name="Dry Cleaning Operations - Access Denied">&lt;!DOCTYPE html&gt;
+<html>
+    <head>
+        <title>Dry Cleaning Operations</title>
+        <meta charset="utf-8"/>
+    </head>
+    <body style="font-family: sans-serif; text-align: center; padding: 4em 1em;">
+        <h1>Access denied</h1>
+        <p>Your account does not have Dry Cleaning processing access.</p>
+        <p>Contact your manager if you believe this is incorrect.</p>
+    </body>
+</html>
+</template>
+
+</odoo>

@@ -11,3 +11,4 @@ from . import test_pos_print_bookkeeping
 from . import test_stage6_security
 from . import test_write_surface_hardening
 from . import test_offline_sync
+from . import test_ops_read_sync

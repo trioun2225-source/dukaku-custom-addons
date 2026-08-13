@@ -44,6 +44,20 @@ online-only by having no registered handler at all.
 This module is an addon within the broader Dukaku ecosystem and depends on
 Odoo's core Point of Sale app, on dukaku_barcode for its thermal label
 paperformat, and on dukaku_offline for offline-operation synchronization.
+
+Stage 8B adds the Dry Cleaning Operations Workspace: a small, dedicated,
+offline-capable operational application (own route, own asset bundle, own
+service worker) for processing-area staff - scan/lookup, Start Processing,
+Mark Ready, and intake-note editing, queued through Stage 8A when offline.
+It is deliberately NOT built on point_of_sale's route/session/access model:
+loading it never requires an open pos.session and never requires
+point_of_sale.group_pos_user, so a processing-only employee never receives
+POS order/payment/cash-session permissions merely to process garments.
+Access is gated on the existing Dry Cleaning "Can Process" capability
+group. A read-only, cursor-based synchronization endpoint (separate from
+Stage 8A's mutation architecture) lets a processing device discover
+tickets/garments it did not itself create or mutate. The existing backend
+views and POS front-desk flow are unchanged and remain fully available.
 """,
     "author": "Dukaku",
     "website": "https://www.dukaku.com",
@@ -52,6 +66,7 @@ paperformat, and on dukaku_offline for offline-operation synchronization.
         "base",
         "point_of_sale",
         "mail",
+        "barcodes",
         "dukaku_barcode",
         "dukaku_offline",
     ],
@@ -65,6 +80,8 @@ paperformat, and on dukaku_offline for offline-operation synchronization.
         "views/dry_cleaning_event_views.xml",
         "views/dry_cleaning_ticket_views.xml",
         "views/dry_cleaning_barcode_lookup_views.xml",
+        "views/dry_cleaning_ops_assets_index.xml",
+        "views/dry_cleaning_ops_menu.xml",
         "report/dry_cleaning_garment_tag_label.xml",
     ],
     "assets": {
@@ -73,6 +90,27 @@ paperformat, and on dukaku_offline for offline-operation synchronization.
             "dukaku_dry_cleaning/static/src/app/screens/receipt_screen/receipt_screen.js",
             "dukaku_dry_cleaning/static/src/app/screens/receipt_screen/receipt_screen.xml",
             "dukaku_dry_cleaning/static/src/app/screens/receipt_screen/receipt/dukaku_dry_cleaning_order_receipt.xml",
+        ],
+        # Stage 8B: the Dry Cleaning Operations Workspace's OWN minimal
+        # bundle. Deliberately NOT point_of_sale._assets_pos and NOT
+        # web.assets_backend - built on web's small, self-contained
+        # "_assets_core" foundation (module loader, Owl, luxon, core
+        # services: rpc/user/notification/registry) plus the lightweight,
+        # POS-independent `barcodes` scanner-input service, exactly as
+        # justified in the Stage 8B completion report.
+        "dukaku_dry_cleaning.assets_ops": [
+            ("include", "web._assets_helpers"),
+            "web/static/src/scss/pre_variables.scss",
+            "web/static/lib/bootstrap/scss/_variables.scss",
+            "web/static/lib/bootstrap/scss/_maps.scss",
+            ("include", "web._assets_core"),
+            "web/static/src/scss/fontawesome_overridden.scss",
+            "web/static/src/scss/ui.scss",
+            "barcodes/static/src/barcode_service.js",
+            "dukaku_dry_cleaning/static/src/ops/**/*",
+            ("remove", "dukaku_dry_cleaning/static/src/ops/main.js"),
+            ("remove", "dukaku_dry_cleaning/static/src/ops/service_worker.js"),
+            "dukaku_dry_cleaning/static/src/ops/main.js",
         ],
     },
     "demo": [],
