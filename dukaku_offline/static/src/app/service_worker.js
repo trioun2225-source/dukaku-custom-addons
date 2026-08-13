@@ -50,6 +50,17 @@ self.addEventListener("activate", (event) => {
     event.waitUntil(self.clients.claim());
 });
 
+// Deep POS URLs are /pos/ui/<config_id>[/<subpath>]; the cached shell for
+// that config is always the bare /pos/ui/<config_id> (see pos_config.py
+// _get_url_to_cache — matches the manifest start_url character-for-character).
+// Parsing config_id out of the failed request keeps this multi-config safe
+// with no hardcoding, consistent with the rest of this addon.
+const getShellUrlForRequest = (requestUrl) => {
+    const { origin, pathname } = new URL(requestUrl);
+    const match = pathname.match(/^\/pos\/ui\/(\d+)(?:\/|$)/);
+    return match ? `${origin}/pos/ui/${match[1]}` : null;
+};
+
 // ── Fetch: network-first with cache fallback (stock strategy, unchanged) ─────
 // Data calls (web/dataset) are explicitly excluded — the SW handles assets
 // only; the IndexedDB queue handles data.  This boundary must not change.
@@ -84,7 +95,25 @@ const fetchCacheRespond = async (event) => {
         // 504 Response.  cache.match returns undefined on a miss, and a fetch
         // handler returning undefined throws TypeError in all browsers.
         const cached = await cache.match(event.request);
-        return cached || new Response("", {
+        if (cached) {
+            return cached;
+        }
+        // Navigation-only shell fallback: a real page navigation (not a
+        // sub-resource fetch) to a deep URL never cached verbatim, e.g.
+        // /pos/ui/1/product/<uuid>.  event.request.mode is "navigate" only
+        // for top-level document loads, so this branch is unreachable for
+        // JS/CSS/image/API sub-resource requests — they keep failing
+        // normally below instead of silently getting shell content.
+        if (event.request.mode === "navigate") {
+            const shellUrl = getShellUrlForRequest(event.request.url);
+            if (shellUrl) {
+                const shell = await cache.match(shellUrl);
+                if (shell) {
+                    return shell;
+                }
+            }
+        }
+        return new Response("", {
             status: 504,
             statusText: "Offline and not cached",
         });
