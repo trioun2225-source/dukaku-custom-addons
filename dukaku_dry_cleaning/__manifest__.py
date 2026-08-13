@@ -91,33 +91,6 @@ views and POS front-desk flow are unchanged and remain fully available.
             "dukaku_dry_cleaning/static/src/app/screens/receipt_screen/receipt_screen.xml",
             "dukaku_dry_cleaning/static/src/app/screens/receipt_screen/receipt/dukaku_dry_cleaning_order_receipt.xml",
         ],
-        # Stage 8B: the Dry Cleaning Operations Workspace's OWN minimal
-        # bundle. Deliberately NOT point_of_sale._assets_pos and NOT
-        # web.assets_backend - built on web's small, self-contained
-        # "_assets_core" foundation (module loader, Owl, luxon, core
-        # services: rpc/user/notification/registry) plus the lightweight,
-        # POS-independent `barcodes` scanner-input service, exactly as
-        # justified in the Stage 8B completion report.
-        #
-        # NOTE: unverified — nothing in the current test suite or enabled
-        # routes actually triggers Odoo to resolve this bundle yet (the
-        # route and menu that would reach it are disabled pending Stage
-        # 8B). Sanity check this loads cleanly the moment static/src/ops/
-        # starts getting populated in Stage 8B.
-        "dukaku_dry_cleaning.assets_ops": [
-            ("include", "web._assets_helpers"),
-            "web/static/src/scss/pre_variables.scss",
-            "web/static/lib/bootstrap/scss/_variables.scss",
-            "web/static/lib/bootstrap/scss/_maps.scss",
-            ("include", "web._assets_core"),
-            "web/static/src/scss/fontawesome_overridden.scss",
-            "web/static/src/scss/ui.scss",
-            "barcodes/static/src/barcode_service.js",
-            "dukaku_dry_cleaning/static/src/ops/**/*",
-            ("remove", "dukaku_dry_cleaning/static/src/ops/main.js"),
-            ("remove", "dukaku_dry_cleaning/static/src/ops/service_worker.js"),
-            "dukaku_dry_cleaning/static/src/ops/main.js",
-        ],
     },
     "demo": [],
     "installable": True,
