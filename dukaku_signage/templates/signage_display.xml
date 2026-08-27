@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<template id="signage_display" name="Dukaku Signage Display">&lt;!DOCTYPE html&gt;
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Signage</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+    <style>
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%;
+                     background: #000; overflow: hidden; }
+        #stage { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; }
+        .signage-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                         background-position: center center; background-repeat: no-repeat;
+                         background-size: contain; opacity: 0; }
+        .signage-slide.is-active { opacity: 1; }
+        #stage.fade .signage-slide { transition: opacity 0.8s ease-in-out; }
+        #stage.cut  .signage-slide { transition: none; }
+        body.portrait #stage {
+            top: 0; left: 100%;
+            width: 100vh; height: 100vw;
+            transform: rotate(90deg); transform-origin: top left;
+        }
+        #signage-msg { position: fixed; inset: 0; display: none;
+                       align-items: center; justify-content: center;
+                       color: #666; font-family: sans-serif; font-size: 3vmin; }
+    </style>
+</head>
+<body>
+    <div id="stage"></div>
+    <div id="signage-msg">No active flyers.</div>
+
+    <!-- The json.dumps(...) call MUST stay inline in the t-out expression:
+         in a template `json` is qwebJSON, whose dumps() returns a _ScriptSafe
+         value that t-out's escape() renders script-safe (< > & -> \uXXXX,
+         quotes preserved). Assigning it to a Python var or concatenating it
+         first loses that wrapper and produces broken / XSS-unsafe output. -->
+    <script type="text/javascript">
+        window.SIGNAGE_BOOT = <t t-out="json.dumps({
+            'secret': secret,
+            'transition_style': (config.transition_style or 'cut') if config else 'cut',
+            'orientation': (config.orientation or 'landscape') if config else 'landscape',
+            'flyers': [
+                {'id': f.id, 'seconds': max(1, f.display_seconds), 'v': str(f.write_date)}
+                for f in flyers
+            ],
+        })"/>;
+    </script>
+
+    <script type="text/javascript">
+    (function () {
+        "use strict";
+        var boot = window.SIGNAGE_BOOT || {};
+        var SECRET = boot.secret || "";
+        var POLL_MS = 5 * 60 * 1000;
+
+        var body = document.body;
+        var stage = document.getElementById("stage");
+        var msg = document.getElementById("signage-msg");
+        var slides = [];
+        var timer = null;
+        var current = [];
+
+        function imgUrl(id, v) {
+            // No literal ampersand anywhere in this file (invalid in XML
+            // text). String.fromCharCode(38) is the query separator.
+            var amp = String.fromCharCode(38);
+            return "/signage/image/" + id
+                 + "?secret=" + encodeURIComponent(SECRET)
+                 + amp + "v=" + encodeURIComponent(v || "");
+        }
+
+        function applyConfig(cfg) {
+            var isPortrait = cfg ? (cfg.orientation === "portrait") : false;
+            var isFade = cfg ? (cfg.transition_style === "fade") : false;
+            body.className = isPortrait ? "portrait" : "";
+            stage.className = isFade ? "fade" : "cut";
+        }
+
+        function sameList(a, b) {
+            if (a.length !== b.length) { return false; }
+            return a.every(function (x, i) {
+                if (x.id !== b[i].id) { return false; }
+                if (x.seconds !== b[i].seconds) { return false; }
+                return x.v === b[i].v;
+            });
+        }
+
+        function activate(i) {
+            slides.forEach(function (el, j) {
+                el.classList.toggle("is-active", j === i);
+            });
+            if (timer) { clearTimeout(timer); timer = null; }
+            if (!slides.length) { return; }
+            var secs = parseInt(slides[i].getAttribute("data-seconds"), 10) || 8;
+            timer = setTimeout(function () {
+                activate((i + 1) % slides.length);
+            }, secs * 1000);
+        }
+
+        function buildSlides(list) {
+            if (timer) { clearTimeout(timer); timer = null; }
+            stage.innerHTML = "";
+            slides = list.map(function (f) {
+                var el = document.createElement("div");
+                el.className = "signage-slide";
+                el.style.backgroundImage = "url('" + imgUrl(f.id, f.v) + "')";
+                el.setAttribute("data-seconds", String(f.seconds || 8));
+                stage.appendChild(el);
+                return el;
+            });
+            if (msg) { msg.style.display = slides.length ? "none" : "flex"; }
+            if (slides.length) { activate(0); }
+        }
+
+        function poll() {
+            fetch("/signage/playlist?secret=" + encodeURIComponent(SECRET),
+                  { cache: "no-store" })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                    if (!data) { return; }
+                    applyConfig(data);
+                    var next = data.flyers || [];
+                    if (!sameList(current, next)) {
+                        current = next;
+                        buildSlides(current);
+                    }
+                })
+                .catch(function () { /* keep showing the current playlist */ });
+        }
+
+        applyConfig(boot);
+        current = boot.flyers || [];
+        buildSlides(current);
+        setInterval(poll, POLL_MS);
+    })();
+    </script>
+</body>
+</html>
+</template>
+</odoo>

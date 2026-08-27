@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_signage_flyer_list" model="ir.ui.view">
+        <field name="name">signage.flyer.list</field>
+        <field name="model">signage.flyer</field>
+        <field name="arch" type="xml">
+            <list string="Signage Flyers">
+                <field name="sequence" widget="handle"/>
+                <field name="image_128" widget="image" options="{'size': [50, 50]}"/>
+                <field name="name"/>
+                <field name="display_seconds"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_signage_flyer_form" model="ir.ui.view">
+        <field name="name">signage.flyer.form</field>
+        <field name="model">signage.flyer</field>
+        <field name="arch" type="xml">
+            <form string="Signage Flyer">
+                <sheet>
+                    <field name="image" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Weekend Promo"/></h1>
+                    </div>
+                    <group>
+                        <field name="display_seconds"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_signage_flyer" model="ir.actions.act_window">
+        <field name="name">Flyers</field>
+        <field name="res_model">signage.flyer</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Upload your first flyer</p>
+            <p>Flyers play full-screen on the signage TV, in the order set by the drag handle.</p>
+        </field>
+    </record>
+
+</odoo>

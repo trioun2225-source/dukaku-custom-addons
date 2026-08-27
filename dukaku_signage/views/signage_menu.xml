@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_signage_root" name="Signage" sequence="90"/>
+
+    <menuitem id="menu_signage_flyers" name="Flyers"
+              parent="menu_signage_root" action="action_signage_flyer" sequence="10"/>
+
+    <menuitem id="menu_signage_settings" name="Settings"
+              parent="menu_signage_root" action="action_signage_config" sequence="20"/>
+
+</odoo>

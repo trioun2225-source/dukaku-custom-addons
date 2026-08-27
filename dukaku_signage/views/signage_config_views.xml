@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_signage_config_form" model="ir.ui.view">
+        <field name="name">signage.config.form</field>
+        <field name="model">signage.config</field>
+        <field name="arch" type="xml">
+            <form string="Signage Settings" create="false" duplicate="false">
+                <sheet>
+                    <group>
+                        <field name="transition_style"/>
+                        <field name="orientation"/>
+                    </group>
+                    <group string="Public Display URL">
+                        <field name="secret" readonly="1"/>
+                        <button name="action_regenerate_secret" type="object"
+                                string="Regenerate Secret" class="btn-secondary"
+                                confirm="Regenerate the display secret? The current TV URL stops working immediately and every screen must be re-pointed at the new URL."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_signage_config" model="ir.actions.server">
+        <field name="name">Settings</field>
+        <field name="model_id" ref="model_signage_config"/>
+        <field name="state">code</field>
+        <field name="code">
+rec = model._get_singleton()
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Signage Settings',
+    'res_model': 'signage.config',
+    'res_id': rec.id,
+    'view_mode': 'form',
+    'views': [(env.ref('dukaku_signage.view_signage_config_form').id, 'form')],
+    'target': 'current',
+}
+        </field>
+    </record>
+
+</odoo>
