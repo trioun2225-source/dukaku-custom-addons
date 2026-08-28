@@ -235,3 +235,4 @@ Always optimize for maintainability, scalability, performance, and long-term ext
 ## Feature Log (update after each completed feature)
 
 1. **Base module skeleton** — DONE. Manifest, security group, root menu. No business models yet.
+2. **`dukaku_pos_access` (separate addon)** — DONE (commit `e947dc8`, on `origin/master`). Per-user POS shop restriction: `res.users.allowed_pos_ids` (m2m → `pos.config`), enforced for `point_of_sale.group_pos_user` via `ir.rule` + companion manager/admin full-access rule (`group_pos_manager` implies `group_pos_user`, so a broader group is not auto-exempt), plus a `pos.session.create()` backend guard (`@api.model_create_multi`, also checks `default_config_id` context). Installed and shell-verified on `staging` only — no production tenant touched; rollout is a separate approved step. Spec: `dukaku-pos-access-restriction-spec-v2.md`.
