@@ -26,6 +26,22 @@ class SignageController(http.Controller):
             return False
         return hmac.compare_digest(provided.encode(), stored.encode())
 
+    def _code_ok(self):
+        """Constant-time compare of ?code= against short_code, for the
+        display route only. Same pure-read posture as _secret_ok: never
+        materializes the config row, identical failure behavior.
+
+        The provided code is upper-cased first: the short code is generated
+        from an all-uppercase alphabet, so a TV remote entering lowercase
+        should still match.
+        """
+        provided = (request.params.get('code') or '').upper()
+        cfg = request.env['signage.config'].sudo().search([], limit=1)
+        stored = cfg.short_code or ''
+        if not stored or not provided:
+            return False
+        return hmac.compare_digest(provided.encode(), stored.encode())
+
     @staticmethod
     def _forbidden():
         return request.make_response(
@@ -40,7 +56,7 @@ class SignageController(http.Controller):
     @http.route('/signage/display', type='http', auth='public',
                 methods=['GET'], csrf=False, save_session=False)
     def signage_display(self, **kw):
-        if not self._secret_ok():
+        if not self._secret_ok() and not self._code_ok():
             _logger.debug('signage: /signage/display rejected (remote=%s)',
                           request.httprequest.remote_addr)
             return self._forbidden()
@@ -50,7 +66,9 @@ class SignageController(http.Controller):
         response = request.render('dukaku_signage.signage_display', {
             'flyers': flyers,
             'config': cfg,
-            'secret': request.params.get('secret') or '',
+            # Always the long secret, regardless of which credential authed this
+            # request - it drives all ongoing polling/image traffic from the page.
+            'secret': cfg.secret or '',
         })
         response.headers['Cache-Control'] = 'no-store'
         return response
