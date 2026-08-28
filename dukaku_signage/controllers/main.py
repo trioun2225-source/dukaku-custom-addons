@@ -26,16 +26,17 @@ class SignageController(http.Controller):
             return False
         return hmac.compare_digest(provided.encode(), stored.encode())
 
-    def _code_ok(self):
-        """Constant-time compare of ?code= against short_code, for the
-        display route only. Same pure-read posture as _secret_ok: never
-        materializes the config row, identical failure behavior.
+    def _code_ok(self, provided):
+        """Constant-time compare of a caller-supplied code against short_code.
 
-        The provided code is upper-cased first: the short code is generated
-        from an all-uppercase alphabet, so a TV remote entering lowercase
-        should still match.
+        The candidate is passed in -- from ?code= for /signage/display, or the
+        <code> path segment for /tv/<code> -- and upper-cased here: the short
+        code is generated from an all-uppercase alphabet, so a TV remote
+        entering lowercase still matches. Same pure-read posture as
+        _secret_ok: never materializes the config row, identical failure
+        behavior for every reason (no row, no code set, mismatch).
         """
-        provided = (request.params.get('code') or '').upper()
+        provided = (provided or '').upper()
         cfg = request.env['signage.config'].sudo().search([], limit=1)
         stored = cfg.short_code or ''
         if not stored or not provided:
@@ -48,6 +49,22 @@ class SignageController(http.Controller):
             'Forbidden', status=403, headers=[('Content-Type', 'text/plain')],
         )
 
+    def _render_display(self, cfg):
+        """Render the full-screen TV page for an already-authorized request.
+
+        The boot JSON always carries the real long `secret` -- it drives all
+        ongoing polling / image traffic from the page -- regardless of which
+        credential (?secret=, ?code=, or /tv/<code>) got the caller in.
+        """
+        flyers = request.env['signage.flyer'].sudo().search([('active', '=', True)])
+        response = request.render('dukaku_signage.signage_display', {
+            'flyers': flyers,
+            'config': cfg,
+            'secret': cfg.secret or '',
+        })
+        response.headers['Cache-Control'] = 'no-store'
+        return response
+
     # ── TV page ─────────────────────────────────────────────────────────────
     # Shape modeled on dukaku_offline's /pos/manifest.json: type='http',
     # auth='public', GET-only, no CSRF, no session persistence. The secret is
@@ -56,22 +73,29 @@ class SignageController(http.Controller):
     @http.route('/signage/display', type='http', auth='public',
                 methods=['GET'], csrf=False, save_session=False)
     def signage_display(self, **kw):
-        if not self._secret_ok() and not self._code_ok():
+        if not self._secret_ok() and not self._code_ok(request.params.get('code') or ''):
             _logger.debug('signage: /signage/display rejected (remote=%s)',
                           request.httprequest.remote_addr)
             return self._forbidden()
 
         cfg = request.env['signage.config'].sudo().search([], limit=1)
-        flyers = request.env['signage.flyer'].sudo().search([('active', '=', True)])
-        response = request.render('dukaku_signage.signage_display', {
-            'flyers': flyers,
-            'config': cfg,
-            # Always the long secret, regardless of which credential authed this
-            # request - it drives all ongoing polling/image traffic from the page.
-            'secret': cfg.secret or '',
-        })
-        response.headers['Cache-Control'] = 'no-store'
-        return response
+        return self._render_display(cfg)
+
+    # ── Short typed entry point ────────────────────────────────────────────
+    # /tv/<code> renders the exact same page as /signage/display?code=<code>,
+    # just a shorter path for typing on a TV remote. Short-code only by
+    # design: no ?secret= fallback (the QR flow uses /signage/display?secret=
+    # and nobody types that).
+    @http.route('/tv/<string:code>', type='http', auth='public',
+                methods=['GET'], csrf=False, save_session=False)
+    def tv(self, code, **kw):
+        if not self._code_ok(code):
+            _logger.debug('signage: /tv/<code> rejected (remote=%s)',
+                          request.httprequest.remote_addr)
+            return self._forbidden()
+
+        cfg = request.env['signage.config'].sudo().search([], limit=1)
+        return self._render_display(cfg)
 
     # ── Lightweight JSON playlist for in-place refresh (polled ~5 min) ──────
     # Separate from /signage/display so the TV page can diff playlist/config

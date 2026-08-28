@@ -14,10 +14,11 @@
                     <group string="Public Display URL">
                         <field name="secret" readonly="1"/>
                         <field name="short_code" readonly="1"/>
+                        <field name="short_url" readonly="1"/>
                         <field name="qr_image" widget="image" options="{'size': [180, 180]}"/>
                         <button name="action_regenerate_secret" type="object"
-                                string="Regenerate Secret" class="btn-secondary"
-                                confirm="Regenerate the display secret? The current TV URL stops working immediately and every screen must be re-pointed at the new URL."/>
+                                string="Regenerate Credentials" class="btn-secondary"
+                                confirm="Regenerate the display credentials? The current TV URL and short code both stop working immediately and every screen must be re-pointed at the new URL / code."/>
                     </group>
                 </sheet>
             </form>

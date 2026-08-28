@@ -34,6 +34,12 @@ class SignageConfig(models.Model):
              "Always regenerated together with 'secret' - never valid alone "
              "without a matching secret behind it.",
     )
+    short_url = fields.Char(
+        string='Display URL', compute='_compute_short_url',
+        help="The full short URL to type on the TV: this database's base URL "
+             "+ /tv/ + the short code. Changes whenever the credentials are "
+             "regenerated.",
+    )
     qr_image = fields.Binary(
         string='Display QR Code', compute='_compute_qr_image',
         help="QR code of the full /signage/display?secret=... URL, for "
@@ -67,6 +73,15 @@ class SignageConfig(models.Model):
         # only, never used for ongoing page traffic; rate-limiting was
         # explicitly ruled out (low-value target).
         return ''.join(secrets.choice(self._SHORT_CODE_ALPHABET) for _ in range(8))
+
+    def _compute_short_url(self):
+        # Non-stored, no @api.depends - same rationale as _compute_qr_image:
+        # always reflects the current base URL and short code.
+        for rec in self:
+            rec.short_url = (
+                f"{rec.get_base_url()}/tv/{rec.short_code}"
+                if rec.short_code else False
+            )
 
     def _compute_qr_image(self):
         # No @api.depends: recomputed on every read so the encoded URL always

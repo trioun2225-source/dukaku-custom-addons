@@ -129,10 +129,42 @@
                 .catch(function () { /* keep showing the current playlist */ });
         }
 
+        // Tap-to-fullscreen: fallback for TVs not launched with --kiosk.
+        // The first click/touch anywhere asks the browser for fullscreen -
+        // honored on a user gesture even where it is refused on page load.
+        // One-shot (listeners self-remove on first fire) and entirely
+        // best-effort: a missing Fullscreen API, a sync throw on old WebKit,
+        // or an async promise rejection on modern engines are all swallowed -
+        // no console noise, no effect on playlist rendering or polling.
+        function requestFullscreenOnce() {
+            var el = document.documentElement;
+            var request = el.requestFullscreen
+                       || el.webkitRequestFullscreen
+                       || el.msRequestFullscreen;
+            if (!request) { return; }
+            try {
+                var result = request.call(el);
+                if (result) {
+                    if (result.catch) { result.catch(function () {}); }
+                }
+            } catch (e) {
+                /* denied or unsupported - ignore */
+            }
+        }
+
+        function onFirstInteraction() {
+            document.removeEventListener("click", onFirstInteraction);
+            document.removeEventListener("touchend", onFirstInteraction);
+            requestFullscreenOnce();
+        }
+
         applyConfig(boot);
         current = boot.flyers || [];
         buildSlides(current);
         setInterval(poll, POLL_MS);
+
+        document.addEventListener("click", onFirstInteraction);
+        document.addEventListener("touchend", onFirstInteraction);
     })();
     </script>
 </body>
