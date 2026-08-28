@@ -1,0 +1,45 @@
+<odoo>
+    <!--
+      Restrict plain POS Users to the POS shops listed in their
+      `allowed_pos_ids`. This rule only targets `group_pos_user`.
+    -->
+    <record id="pos_config_user_restrict_rule" model="ir.rule">
+        <field name="name">POS Config User Restrict</field>
+        <field name="model_id" ref="point_of_sale.model_pos_config"/>
+        <field name="domain_force">[('id', 'in', user.allowed_pos_ids.ids)]</field>
+        <field name="groups" eval="[(4, ref('point_of_sale.group_pos_user'))]"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_create">1</field>
+        <field name="perm_unlink">1</field>
+    </record>
+
+    <!--
+      Companion "escape hatch" rule.
+
+      `point_of_sale.group_pos_manager` *implies* `group_pos_user`, and admins
+      typically hold both `group_pos_user` (via manager) and `base.group_system`.
+      Odoo ORs together only the ir.rule records whose `groups` intersect the
+      user's groups (see base/models/ir_rule.py::_compute_domain) — merely
+      holding a broader group grants no exemption. Without this rule, every POS
+      Manager / Administrator would also be filtered down to their (usually
+      empty) `allowed_pos_ids` and lose access to all POS shops.
+
+      Because group rules are OR-ed, a manager/admin gets
+      `restrict_domain OR TRUE` = full access, while a plain POS User (not in
+      either group below) is unaffected and keeps only the restrict rule.
+    -->
+    <record id="pos_config_manager_full_rule" model="ir.rule">
+        <field name="name">POS Config Manager Full Access</field>
+        <field name="model_id" ref="point_of_sale.model_pos_config"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[
+            (4, ref('point_of_sale.group_pos_manager')),
+            (4, ref('base.group_system')),
+        ]"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_create">1</field>
+        <field name="perm_unlink">1</field>
+    </record>
+</odoo>

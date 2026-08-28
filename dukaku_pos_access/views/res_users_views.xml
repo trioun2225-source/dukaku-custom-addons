@@ -1,0 +1,18 @@
+<odoo>
+    <record id="view_users_form_dukaku_pos_access" model="ir.ui.view">
+        <field name="name">res.users.form.dukaku.pos.access</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Point of Sale" name="dukaku_pos_access">
+                    <group>
+                        <field name="allowed_pos_ids"
+                               widget="many2many_tags"
+                               options="{'no_create': True}"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
